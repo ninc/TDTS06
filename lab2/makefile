@@ -1,16 +1,20 @@
-all: proxy
+CC=g++
+CFLAGS= -c -Wall -Wextra -Werror
+LDFLAGS= -lnsl -lsocket -lresolv
 
-proxy: main.o factorial.o hello.o
-	g++ main.o factorial.o hello.o -o hello
+all: msp
+
+msp: main.o socket_server.o socket_client.o
+	$(CC) main.o socket_server.o socket_client.o $(LDFLAGS) -o msp
 
 main.o: main.cpp
-	g++ -c main.cpp
+	$(CC) $(CFLAGS) main.cpp
 
-factorial.o: factorial.cpp
-	g++ -c factorial.cpp
+socket_server.o: socket_server.cpp
+	$(CC) $(CFLAGS) socket_server.cpp
 
-hello.o: hello.cpp
-	g++ -c hello.cpp
+socket_client.o: socket_client.cpp
+	$(CC) $(CFLAGS) socket_client.cpp	
 
 clean:
-	rm -rf *o proxy
+	rm -rf *o msp
