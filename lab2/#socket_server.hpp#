@@ -18,7 +18,7 @@ private:
   int m_listen();
   int m_accept();
   int m_bind();
-  int m_recv(int sock);
+  int m_recv(int sock, char *msg_buffer);
   int m_socket();
   int m_send(int sock, string message);
   int m_handle_request(int sock);
@@ -27,7 +27,7 @@ private:
   int sockfd;
   int newsockfd;
   socklen_t clilen;
-  static const int BUFFER_SIZE = 1023;
-  char recv_buffer[BUFFER_SIZE];
+  static const int BUFFER_SIZE = 1024;
+  //char recv_buffer[BUFFER_SIZE];
 };
 #endif

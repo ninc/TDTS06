@@ -19,7 +19,9 @@ url_filter::~url_filter()
 
 string url_filter::filter(string http)
 {
+  cout << "url filter startas" << endl;
   cout<< http<< endl;
+  cout << "Ovanstående visade http addressen" << endl;
   string request;
   string url;
   stringstream ss;
