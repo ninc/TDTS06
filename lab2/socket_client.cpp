@@ -97,13 +97,13 @@ int socket_client::m_send(string message){
 
   int sent_left = msg.length();
   int reply_size;
-  char *msg_ptr = message.c_str();
+  char *msg_ptr = (char*)message.c_str();
 
   cout << sent_left << endl;
   while(sent_left > 0)
     {
       //Reply via socket
-      reply_size = send(sockfd, msg_ptr, send_left, 0);
+      reply_size = send(sockfd, msg_ptr, sent_left, 0);
       //If reply error
       if (reply_size < 0){
 	//Todo throw exception
@@ -114,7 +114,7 @@ int socket_client::m_send(string message){
 
 	cout << sent_left << endl;
       }
-
+    }
       cout << "Socket client m_send finished" << endl;
       return 0;
 }
