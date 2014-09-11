@@ -1,6 +1,6 @@
-CC=gccfilter -c -a g++
-CFLAGS= -std=c++11 -c -Wpedantic -Wall -Wextra -Werror
-LDFLAGS= -L/sw/gcc-4.9.1/lib -lnsl -lsocket -lresolv  
+CC=g++
+CFLAGS= -c -Wall -Wextra -Werror
+LDFLAGS= -lnsl -lsocket -lresolv
 
 all: msp
 

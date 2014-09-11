@@ -1,7 +1,6 @@
 #include "socket_server.hpp"
 #include "url_filter.hpp"
 #include "socket_client.hpp"
-#include <cstring>
 
 using namespace std;
 
@@ -9,14 +8,8 @@ socket_server::socket_server(int port){
   portno = port;
   clilen = sizeof(cli_addr);
 
-  if(m_socket())
-    {
-      cout << "Failed to init socket in socket server" << endl;
-    }
-  if(m_bind())
-    {
-      cout << "Failed to bind socket in socket server" << endl;
-    }
+  m_socket();
+  m_bind();
   
 }
 socket_server::~socket_server(){
@@ -52,15 +45,10 @@ int socket_server::m_bind(){
 int socket_server::m_recv(int sock){
 
   //Empty buffer
-  cout << "Socket server memset" << endl;
- 
   memset(&recv_buffer, 0, sizeof(recv_buffer));
 
-
-  cout << "buffer 0 " << recv_buffer[0] << endl;
-
   int recv_size = recv(sock, recv_buffer, BUFFER_SIZE, 0);
-  cout << "Socket server memset COMPLETE" << endl;
+  
   //Check if socket has been read
   if (recv_size < 0) {
     //Todo throw exception
@@ -76,18 +64,14 @@ int socket_server::m_recv(int sock){
 int socket_server::m_handle_request(int sock){
 
   //Receive message
-  if(m_recv(sock)){
-    cout << "Failed to recieve message in socket server" << endl;
-    return -1;
-  }
-
+  m_recv(sock);
 
   //Do processing
   //cout << recv_buffer << endl;
   
   url_filter uf = url_filter();
   
-  string message = "hej"; //recv_buffer;
+  string message = recv_buffer;
   
   string url = uf.filter(message);
   socket_client sc = socket_client(url, message);
@@ -144,11 +128,8 @@ int socket_server::start()
    */
   while (true) 
     {
-      if(m_accept()){
-	continue;
-      }
+      m_accept();
       /* Create child process */
-      cout << "Accepted request in socket server" << endl;
       int pid = fork();
       if (pid < 0)
         {
@@ -158,11 +139,8 @@ int socket_server::start()
       if (pid == 0)  
         {
 	  /* This is the client process */
-	  cout << "Initating client processes in socket server" << endl;
 	  close(sockfd);
-	  if(m_handle_request(newsockfd)){
-	    cout << "Error, failed to hande request of server socket" << endl;
-	  }
+	  m_handle_request(newsockfd);
 	  exit(0);
         }
       else

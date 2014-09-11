@@ -1,19 +1,18 @@
 #include "socket_client.hpp"
 #include <sstream>
-#include <string>
-#include <cstring>
 
 using namespace std;
 
 
 socket_client::socket_client(string u, string message){
-  socket_client(u, message, 80);
+  socket_client(url, message, 80);
 }
 
 socket_client::socket_client(string u, string message, int port){
-  stringstream ss;
+  portno = port;
+  ostringstream ss;
   ss << port;
-  ss >> portno;
+  portno << ss;
   msg = message;
   url = u;
   
@@ -42,7 +41,6 @@ int socket_client::m_connect(){
 int socket_client::m_recv(){
 
   //Empty buffer
-  cout << "Socket client memset" << endl;
   memset(&recv_buffer, 0, sizeof(recv_buffer));
 
   int recv_size = recv(sockfd, recv_buffer, BUFFER_SIZE, 0);
@@ -90,11 +88,11 @@ int socket_client::m_socket(){
   hints.ai_addr = NULL;
   hints.ai_next = NULL;
   //Get addr_info
-  if(getaddrinfo(url.c_str(), portno.c_str(), &hints, &result) != 0){
+  if(getaddrinfo(url, portno, &hints, &result) =! 0){
     return -2;
   }
   //setup socket with addr_info data
-  sockfd = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+  sockfd = socket(result->ai_family, result->ai_sock_type, result->ai_protocol);
   // Error check for opening socket
   if (sockfd < 0) {
     return -1;

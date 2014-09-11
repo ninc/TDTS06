@@ -7,9 +7,9 @@
 using namespace std;
 class url_filter{
 public:
-	url_filter(int port);
+	url_filter();
 	~url_filter();
-	int filter(string http);
+	string filter(string http);
 private:
 	vector<string> key_words;
 

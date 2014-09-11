@@ -13,8 +13,8 @@
 using namespace std;
 class socket_client{
 public:
-  socket_client(string u, string message, int port);
-  socket_client(string u, string message);
+  socket_client(string url, string message, int port);
+  socket_client(string url, string message);
   ~socket_client();
   string start();
 private:

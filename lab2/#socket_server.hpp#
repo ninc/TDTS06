@@ -28,6 +28,6 @@ private:
   int newsockfd;
   socklen_t clilen;
   static const int BUFFER_SIZE = 1023;
-  char *recv_buffer[BUFFER_SIZE];
+  char recv_buffer[BUFFER_SIZE];
 };
 #endif

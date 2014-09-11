@@ -1,9 +1,10 @@
 #include "url_filter.hpp"
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
-url_filter::url_filter(int port)
+url_filter::url_filter()
 {
 	key_words.push_back("SpongeBob");
 	key_words.push_back("Britney Spears");
@@ -16,11 +17,20 @@ url_filter::~url_filter()
 
 }
 
-int url_filter::filter(string http)
+string url_filter::filter(string http)
 {
+  cout<< http<< endl;
+  string request;
+  string url;
+  stringstream ss;
+  ss << http;
+  ss >> request >> url;
+  cout << endl << endl << endl;
+  cout << request << endl;
 
-	//Look for key word in string
-	for (auto key : key_words)
+  cout << url << endl;
+  //Look for key word in string
+	/*for (auto key : key_words)
 	{
 		found = http.find(key);
 
@@ -30,7 +40,8 @@ int url_filter::filter(string http)
 			cout << key <<" found at: " << found << endl;
 		}
 		
-	}
+		}*/
+  return url;
 	
 
 
