@@ -16,6 +16,10 @@
 *.lib
 
 # Executables
+msp
 *.exe
 *.out
 *.app
+
+# Temp files
+*~
