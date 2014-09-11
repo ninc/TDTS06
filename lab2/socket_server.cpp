@@ -62,11 +62,12 @@ int socket_server::m_bind(){
 int socket_server::m_recv(int sock, char *msg_buffer){
 
   //Empty buffer
-  cout << "Socket server memset" << endl;
+  cout << "Socket server trying to recv" << endl;
   char recv_buffer[256];
   int i = 0;
+  int recv_size = 1;
   do{
-    int recv_size = recv(sock, recv_buffer, sizeof(buffer), 0);
+    recv_size = recv(sock, recv_buffer, sizeof(recv_buffer), 0);
 
     for(int j = 0; j<recv_size; j++)
       {
@@ -74,9 +75,13 @@ int socket_server::m_recv(int sock, char *msg_buffer){
 	i++;
       }
 
+    //If end of HTTP request
+    if(!strcmp("\r\n\r\n", &msg_buffer[i -4]))
+       break;
+
   } while(recv_size > 0);
-  
-  cout << "Socket server memset COMPLETE recived: " << recv_size << " " << buffer <<  endl;
+
+  cout << "Socket server recv COMPLETE" <<  endl;
   //Check if socket has been read
   if (recv_size < 0) {
     //Todo throw exception
@@ -100,22 +105,27 @@ int socket_server::m_handle_request(int sock){
 
   
   if(m_recv(sock, msg_buffer)){
-    cout << "Failed to recieve message in socket server" << endl;
-   
+    cout << "Failed to recieve message in socket server" << endl;   
     return -1;
   }
   
   
   //Do processing
-  cout << msg_buffer << endl;
+  //cout << msg_buffer << endl;
   
-  //url_filter uf = url_filter();
+  url_filter uf = url_filter();
   
-  //string message = recv_buffer; //recv_buffer;
-  //cout << message << endl;
-  //string url = uf.filter(message);
-  //socket_client sc = socket_client(url, message);
-  //sc.start();
+  string message = msg_buffer;
+  cout << message << endl;
+  string url = uf.filter(message);
+
+  cout << url << endl;
+
+  socket_client sc(url, message);
+
+  string response = sc.start();
+
+  cout << response << endl;
 
   //Write back to client
   //m_send(sock, message);

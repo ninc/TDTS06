@@ -18,17 +18,17 @@ public:
   ~socket_client();
   string start();
 private:
-  int m_socket();
-  int m_connect();
-  int m_send();
+  int m_socket(struct addrinfo *result);
+  int m_connect(struct addrinfo *result);
   int m_recv();
+  int m_send(string message);
   string portno;
   string msg;
   string url;
   int sockfd;
-  struct addrinfo hints;
-  struct addrinfo *result;
+  struct addrinfo hint;
+  struct addrinfo result;
   static const int BUFFER_SIZE = 1023;
-  char recv_buffer[BUFFER_SIZE];
+  char msg_buffer[BUFFER_SIZE];
 };
 #endif
