@@ -1,0 +1,9 @@
+TODO:
+
+1. Filtrera GET requestet och bygg sedan upp det med modifierade värden. (Connection: keep-alive bör vara Connection: close istället)
+
+2. Filtrera content av responsen.
+
+3. Detektera om responsen är plain text eller något annat format.
+
+4. Cache? 

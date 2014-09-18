@@ -34,7 +34,7 @@ void url_filter::sort_header(string http)
     {
       if(line != "\r")
 	{
-	  cout << line << endl;
+	  //cout << line << endl;
 	  pos = line.find(delimiter);
 	  if(pos > 0)
 	    {
@@ -60,8 +60,9 @@ string url_filter::filter(string http)
   
   // Get request header
   if(request.substr(0,2).compare("GET"))
-    {
+    { 
       string header = http;
+      //Remove request header
       header.erase(0, header.find("\n") + 1);
       sort_header(header);
   

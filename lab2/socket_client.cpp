@@ -68,7 +68,9 @@ int socket_client::m_recv(){
 	i++;
       }
 
-    cout << msg_buffer << endl;
+    //cout << "recv_size: " << recv_size << " last in buffer: " << msg_buffer[i-4] 
+    //	 << msg_buffer[i-3] << msg_buffer[i-2] << msg_buffer[i-1]
+    //	 << msg_buffer[i] << endl;
 
     //If end of HTTP request
     if(!strcmp("\r\n\r\n", &msg_buffer[i -4]))
@@ -99,24 +101,27 @@ int socket_client::m_send(string message){
   int reply_size;
   char *msg_ptr = (char*)message.c_str();
 
-  cout << sent_left << endl;
+  //cout << sent_left << endl;
   while(sent_left > 0)
     {
+      //cout << "msg left: " << msg_ptr << endl;
+
       //Reply via socket
       reply_size = send(sockfd, msg_ptr, sent_left, 0);
       //If reply error
       if (reply_size < 0){
 	//Todo throw exception
 	return -1;
-      
-	sent_left -= reply_size;
-	msg_ptr += reply_size;
-
-	cout << sent_left << endl;
       }
+
+      //Bytes left to send
+      sent_left -= reply_size;
+      //Move message pointer
+      msg_ptr += reply_size;
+      //cout << "sent left: " <<  sent_left << endl;
     }
-      cout << "Socket client m_send finished" << endl;
-      return 0;
+  cout << "Socket client m_send finished" << endl;
+  return 0;
 }
 
 int socket_client::m_socket(struct addrinfo *result){
@@ -153,9 +158,6 @@ int socket_client::m_socket(struct addrinfo *result){
 
 string socket_client::start()
 {
-  string response;
-  //struct addrinfo result;
-
   cout << "Starting socket client " << endl;
   
   //check that socket was setup succsefully
@@ -173,13 +175,7 @@ string socket_client::start()
     return "Error, failed to close";
   }
   
-  //Todo
-  //Connect port 80 to server address
-  //Send get request
-  //receive response
-  //close connection
-  //pass response to content filter
-  //parse in contentfilter
+  string response(msg_buffer);
 
   cout << "Socket client finished" << endl;
   return response;

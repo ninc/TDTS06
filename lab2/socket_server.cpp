@@ -125,32 +125,46 @@ int socket_server::m_handle_request(int sock){
 
   string response = sc.start();
 
-  cout << response << endl;
+  //cout << response << endl;
 
   //Write back to client
-  //m_send(sock, message);
+  m_send(sock, response);
   
+  cout << "Socket server handled the request " << endl;
+
   return 0;
 }
 
 
 int socket_server::m_send(int sock, string message){
 
-     
-  //cout << message << endl;
+  cout << "Socket server m_send started" << endl;
 
-  //Reply via socket
-  int reply_size = send(sock, &message, message.length(), 0);
-  //If reply was sent
-  if (reply_size < 0){
-    //Todo throw exception
-    return -1;
-  }
-  else
+  int sent_left = message.length();
+  int reply_size;
+  char *msg_ptr = (char*)message.c_str();
+
+  //cout << sent_left << endl;
+  while(sent_left > 0)
     {
-      return 0;
-    }
+      //cout << "msg left: " << msg_ptr << endl;
 
+      //Reply via socket
+      reply_size = send(sock, msg_ptr, sent_left, 0);
+      //If reply error
+      if (reply_size < 0){
+	//Todo throw exception
+	return -1;
+      }
+
+      //Bytes left to send
+      sent_left -= reply_size;
+      //Move message pointer
+      msg_ptr += reply_size;
+      //cout << "sent left: " <<  sent_left << endl;
+    }
+  cout << "Socket server m_send finished" << endl;
+  return 0;
 
 }
 
