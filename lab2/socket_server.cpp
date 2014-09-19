@@ -101,7 +101,7 @@ int socket_server::m_handle_request(int sock){
   char msg_buffer[BUFFER_SIZE];
   //char *recv_buffer = (char*)malloc(sizeof(char)*BUFFER_SIZE);
   memset(&msg_buffer, 0, sizeof(msg_buffer));
-  cout << "recieve buffers first position: " << msg_buffer[0] << " slut " << endl;
+  //cout << "recieve buffers first position: " << msg_buffer[0] << " slut " << endl;
 
   
   if(m_recv(sock, msg_buffer)){
@@ -116,16 +116,18 @@ int socket_server::m_handle_request(int sock){
   url_filter uf = url_filter();
   
   string message = msg_buffer;
+  cout << "socket_server got this message when recieving:" << endl;
   cout << message << endl;
   string url = uf.filter(message);
+  //cout << "Här är feedback från url" << endl;
+  //cout << url << endl;
 
-  cout << url << endl;
 
   socket_client sc(url, message);
-
+  
   string response = sc.start();
-
-  //cout << response << endl;
+  cout << "This is the response to socket_server from socket_client: " << endl;
+  cout << response << endl;
 
   //Write back to client
   m_send(sock, response);

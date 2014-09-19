@@ -11,10 +11,16 @@ public:
   url_filter();
   ~url_filter();
   string filter(string http);
+  string build_request();
+  bool check_url(string url);
 private:
   vector<string> key_words;
-  void sort_header(string http);
-  map<string, string> header;
-
+  string sort_header(string http);
+  //map<string, string> header;
+  vector<string> first_url_part;
+  vector<string> second_url_part;
+  string redirect_url;
+  string redirect_get_request;
+  
 };
 #endif
