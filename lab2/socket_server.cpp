@@ -62,7 +62,7 @@ int socket_server::m_bind(){
 int socket_server::m_recv(int sock, char *msg_buffer){
 
   //Empty buffer
-  cout << "Socket server trying to recv" << endl;
+  //cout << "Socket server trying to recv" << endl;
   char recv_buffer[256];
   int i = 0;
   int recv_size = 1;
@@ -81,7 +81,7 @@ int socket_server::m_recv(int sock, char *msg_buffer){
 
   } while(recv_size > 0);
 
-  cout << "Socket server recv COMPLETE" <<  endl;
+  //cout << "Socket server recv COMPLETE" <<  endl;
   //Check if socket has been read
   if (recv_size < 0) {
     //Todo throw exception
@@ -97,7 +97,7 @@ int socket_server::m_recv(int sock, char *msg_buffer){
 int socket_server::m_handle_request(int sock){
 
   //Receive message
-  cout << "Started handling of request" << endl;
+  //cout << "Started handling of request" << endl;
   char msg_buffer[BUFFER_SIZE];
   //char *recv_buffer = (char*)malloc(sizeof(char)*BUFFER_SIZE);
   memset(&msg_buffer, 0, sizeof(msg_buffer));
@@ -111,36 +111,24 @@ int socket_server::m_handle_request(int sock){
   
   
   //Do processing
-  //cout << msg_buffer << endl;
-  
   url_filter uf = url_filter();
   
-  string message = msg_buffer;
-  cout << "socket_server got this message when recieving:" << endl;
-  cout << message << endl;
-  string url = uf.filter(message);
-  //cout << "Här är feedback från url" << endl;
-  //cout << url << endl;
+  string message(msg_buffer);
 
+  string response = uf.start(message);
 
-  socket_client sc(url, message);
-  
-  string response = sc.start();
-  cout << "This is the response to socket_server from socket_client: " << endl;
   cout << response << endl;
 
   //Write back to client
   m_send(sock, response);
   
-  cout << "Socket server handled the request " << endl;
-
   return 0;
 }
 
 
 int socket_server::m_send(int sock, string message){
 
-  cout << "Socket server m_send started" << endl;
+  //cout << "Socket server m_send started" << endl;
 
   int sent_left = message.length();
   int reply_size;
@@ -165,7 +153,7 @@ int socket_server::m_send(int sock, string message){
       msg_ptr += reply_size;
       //cout << "sent left: " <<  sent_left << endl;
     }
-  cout << "Socket server m_send finished" << endl;
+  //cout << "Socket server m_send finished" << endl;
   return 0;
 
 }
@@ -199,7 +187,7 @@ int socket_server::start()
 	continue;
       }
       /* Create child process */
-      cout << "Accepted request in socket server" << endl;
+      //cout << "Accepted request in socket server" << endl;
       int pid = fork();
       if (pid < 0)
         {
@@ -209,7 +197,7 @@ int socket_server::start()
       if (pid == 0)  
         {
 	  /* This is the client process */
-	  cout << "Initating client processes in socket server" << endl;
+	  //cout << "Initating client processes in socket server" << endl;
 	  close(sockfd);
 	  if(m_handle_request(newsockfd)){
 	    cout << "Error, failed to hande request of server socket" << endl;

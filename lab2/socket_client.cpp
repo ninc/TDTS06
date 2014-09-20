@@ -13,14 +13,14 @@ socket_client::socket_client(string u, string message) : socket_client(u, messag
 
 socket_client::socket_client(string u, string message, int port){
 
-  cout << "Initiating socket client" << endl;
+  //cout << "Initiating socket client" << endl;
   stringstream ss;
   ss << port;
   ss >> portno;
   msg = message;
   url = u;
   //cout << msg << endl;
-  cout << "Init finished, socket client" << endl;
+  //cout << "Init finished, socket client" << endl;
   
 }
 socket_client::~socket_client(){
@@ -32,7 +32,7 @@ socket_client::~socket_client(){
 int socket_client::m_recv(){
 
   //Empty buffer
-  cout << "Socket client trying to recv" << endl;
+  //cout << "Socket client trying to recv" << endl;
   char recv_buffer[256];
   int i = 0;
   int recv_size = 1;
@@ -55,7 +55,7 @@ int socket_client::m_recv(){
 
   } while(recv_size > 0);
 
-  cout << "Socket client recv COMPLETE" <<  endl;
+  //cout << "Socket client recv COMPLETE" <<  endl;
   //Check if socket has been read
   if (recv_size < 0) {
     //Todo throw exception
@@ -72,7 +72,7 @@ int socket_client::m_recv(){
 int socket_client::m_send(string message){
 
      
-  cout << "Socket client m_send started" << endl;
+  //cout << "Socket client m_send started" << endl;
 
   int sent_left = message.length();
   int reply_size;
@@ -97,25 +97,25 @@ int socket_client::m_send(string message){
       msg_ptr += reply_size;
       //cout << "sent left: " <<  sent_left << endl;
     }
-  cout << "Socket client m_send finished" << endl;
+  //cout << "Socket client m_send finished" << endl;
   return 0;
 }
 
 int socket_client::m_connect(struct addrinfo *result){
   
-  cout << "Starting connect socket client " << endl;
+  //cout << "Starting connect socket client " << endl;
 
   //cout << result->ai_addr << endl;
   //cout << result->ai_addrlen << endl;
   //Trying to connect to socket
   int status = connect(sockfd, result->ai_addr, result->ai_addrlen);
-  cout << "connect status: " << status << endl;
+  //cout << "connect status: " << status << endl;
   if (status < 0) {
     perror("Connect");
     return -1;
     //Todo throw exception
   }else{
-    cout << "Finished connect socket client " << endl;
+    //cout << "Finished connect socket client " << endl;
     return 0;
   }
 }
@@ -123,7 +123,7 @@ int socket_client::m_connect(struct addrinfo *result){
 int socket_client::m_socket(struct addrinfo *result){
   
 
-  cout << "Started m_socket in socket client" << endl;
+  //cout << "Started m_socket in socket client" << endl;
   struct addrinfo hints;
   memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
@@ -147,14 +147,14 @@ int socket_client::m_socket(struct addrinfo *result){
     return -3;
   }
 
-  cout << "Finished m_socket in socket client" << endl;
+  //cout << "Finished m_socket in socket client" << endl;
   return 0;
 }
 
 
 string socket_client::start()
 {
-  cout << "Starting socket client " << endl;
+  //cout << "Starting socket client " << endl;
   
   //check that socket was setup succsefully
   if(m_socket(&result)){
@@ -173,6 +173,6 @@ string socket_client::start()
   
   string response(msg_buffer);
 
-  cout << "Socket client finished" << endl;
+  //cout << "Socket client finished" << endl;
   return response;
 }

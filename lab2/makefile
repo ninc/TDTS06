@@ -13,8 +13,8 @@ endif
 
 all: msp
 
-msp: main.o socket_server.o socket_client.o url_filter.o
-	$(CC) main.o socket_server.o socket_client.o url_filter.o $(LDFLAGS) -o msp
+msp: main.o socket_server.o socket_client.o url_filter.o cache.o
+	$(CC) main.o socket_server.o socket_client.o url_filter.o cache.o $(LDFLAGS) -o msp
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) main.cpp
@@ -27,6 +27,9 @@ socket_client.o: socket_client.cpp
 
 url_filter.o: url_filter.cpp
 	$(CC) $(CFLAGS) url_filter.cpp
+
+cache.o: cache.cpp
+	$(CC) $(CFLAGS) cache.cpp
 
 clean:
 	rm -rf *o msp
