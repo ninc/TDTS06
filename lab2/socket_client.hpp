@@ -16,19 +16,20 @@ public:
   socket_client(string u, string message, int port);
   socket_client(string u, string message);
   ~socket_client();
-  string start();
+  int start();
+  int m_recv(char *recv_buffer);
+  int m_close();
 private:
   int m_socket(struct addrinfo *result);
   int m_connect(struct addrinfo *result);
-  int m_recv();
   int m_send(string message);
   string portno;
   string msg;
-  string url;
+  string host;
   int sockfd;
   struct addrinfo hint;
   struct addrinfo result;
-  static const int BUFFER_SIZE = 1000000;
-  char msg_buffer[BUFFER_SIZE];
+
+
 };
 #endif

@@ -6,8 +6,8 @@
 using namespace std;
 
 socket_server::socket_server(int port){
-  portno = port;
-  clilen = sizeof(cli_addr);
+  m_portno = port;
+  m_clilen = sizeof(m_cli_addr);
 
   if(m_socket())
     {
@@ -24,13 +24,13 @@ socket_server::~socket_server(){
 	
 } 
 int socket_server::m_listen(){
-  listen(sockfd,5);
+  listen(m_sockfd,5);
   return 0;
 } 
 
 int socket_server::m_accept(){
-  newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-  if (newsockfd < 0){ 
+  m_newsockfd = accept(m_sockfd, (struct sockaddr *) &m_cli_addr, &m_clilen);
+  if (m_newsockfd < 0){ 
     cout << "Failed to accept connection in socket server" << endl;
     return -1;
     //Todo throw exception
@@ -45,14 +45,14 @@ int socket_server::m_bind(){
 
   //Setup socket to allow rebind of socket
   int optval = 1;
-  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+  setsockopt(m_sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
 
 
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_addr.s_addr = INADDR_ANY;
-  serv_addr.sin_port = htons(portno);
+  m_serv_addr.sin_family = AF_INET;
+  m_serv_addr.sin_addr.s_addr = INADDR_ANY;
+  m_serv_addr.sin_port = htons(m_portno);
   // Try to bind the socket to an address and a port number
-  if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+  if (bind(m_sockfd, (struct sockaddr *) &m_serv_addr, sizeof(m_serv_addr)) < 0) {
     return  -1;
     //Todo throw exception
   }else{
@@ -111,24 +111,20 @@ int socket_server::m_handle_request(int sock){
   
   //cout << "handle the request" << endl;
   //Do processing
-  url_filter uf = url_filter();
+  url_filter uf = url_filter(this);
   
   string message(msg_buffer);
   
   //cout << "Start filtering" << endl;
-  string response = uf.start(message);
+  if(uf.start(message) < 0){
+    return -1;
+  }
 
-  //cout << endl << endl << "IN SOCKET SERVER" << endl << endl;
-  //cout << response << endl;
-
-  //Write back to client
-  m_send(sock, response);
-  
   return 0;
 }
 
 
-int socket_server::m_send(int sock, string message){
+int socket_server::m_send(string message){
 
   //cout << "Socket server m_send started" << endl;
 
@@ -139,10 +135,8 @@ int socket_server::m_send(int sock, string message){
   //cout << sent_left << endl;
   while(sent_left > 0)
     {
-      //cout << "msg left: " << msg_ptr << endl;
-
       //Reply via socket
-      reply_size = send(sock, msg_ptr, sent_left, 0);
+      reply_size = send(m_newsockfd, msg_ptr, sent_left, 0);
       //If reply error
       if (reply_size < 0){
 	//Todo throw exception
@@ -162,9 +156,9 @@ int socket_server::m_send(int sock, string message){
 
 int socket_server::m_socket(){
  
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  m_sockfd = socket(AF_INET, SOCK_STREAM, 0);
   // Error check for opening socket
-  if (sockfd < 0) {
+  if (m_sockfd < 0) {
     return -1;
     //Todo throw exception
   }else{
@@ -200,15 +194,15 @@ int socket_server::start()
         {
 	  /* This is the client process */
 	  //cout << "Initating client processes in socket server" << endl;
-	  close(sockfd);
-	  if(m_handle_request(newsockfd)){
+	  close(m_sockfd);
+	  if(m_handle_request(m_newsockfd)){
 	    cout << "Error, failed to hande request of server socket" << endl;
 	  }
 	  exit(0);
         }
       else
         {
-	  close(newsockfd);
+	  close(m_newsockfd);
         }
     } /* end of while */
 

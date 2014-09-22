@@ -6,14 +6,15 @@
 
 using namespace std;
 
-url_filter::url_filter()
+url_filter::url_filter(socket_server *socket_server)
 {
-	key_words.push_back("SpongeBob");
-	key_words.push_back("Britney Spears");
-	key_words.push_back("Paris Hilton");
-	key_words.push_back("Norrköping");
-	url = "";
-	url_redirect = false;
+  m_sr = socket_server;
+  key_words.push_back("SpongeBob");
+  key_words.push_back("Britney Spears");
+  key_words.push_back("Paris Hilton");
+  key_words.push_back("Norrköping");
+  url = "";
+  url_redirect = false;
 }
 
 url_filter::~url_filter()
@@ -79,7 +80,7 @@ string url_filter::sort_header(string http)
 
 
 //URL filter the http request
-string url_filter::filter(string http)
+string url_filter::m_filter(string http)
 {
   string temp = http;
   string request_type;
@@ -144,19 +145,21 @@ string url_filter::build_request(string request_header)
 
 
 //Start the filtering
-string url_filter::start(string http_request)
+int url_filter::start(string http_request)
 {
 
   //cout << "filter start" << endl;
-  string host_name = filter(http_request);
+  string host_name = m_filter(http_request);
   //cout << "Cache start" << endl;
-  cache c = cache(this);
+  cache c = cache(this, m_sr);
 
-  string response = c.start(url, request, host_name, url_redirect);
+  if(c.start(url, request, host_name, url_redirect) < 0){
+    return -1;
+  }
 
   //cout << endl <<"IN URL FILTER" << endl;
   //cout << response << endl;
-  return response;
+  return 0;
 
 }
 
