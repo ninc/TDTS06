@@ -1,68 +1,34 @@
 #include "cache.hpp"
+#include "content_filter.hpp"
 #include "socket_client.hpp"
 #include <string>
 
 
 
 
-cache::cache()
+cache::cache(url_filter *url_filter)
 {
+  uf = url_filter;
+  url_redirect.request= "GET http://www.ida.liu.se/~TDTS04/labs/2011/ass2/error1.html HTTP/1.1\r\n" 
+    "Host: www.ida.liu.se\r\n"
+    "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:32.0) Gecko/20100101 Firefox/32.0\r\n"
+    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+    "Accept-Language: en-US,en;q=0.5\r\n"
+    "Accept-Encoding: gzip, deflate\r\n"
+    "Connection: close\r\n\r\n";
 
-  table["url_redirect"] = HTTP/1.1 200 OK
-Date: Sat, 20 Sep 2014 23:07:52 GMT
-Server: Apache
-Last-Modified: Fri, 19 Sep 2014 08:41:35 GMT
-Accept-Ranges: bytes
-Content-Length: 311
-Connection: close
-Content-Type: text/html
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>JSundqvist.se</title>
-<body>
-
-SpongeBob, Britney Spears, Paris Hilton, or Norrköping
-
-</body>
-</html>
-host_name: www.ida.liu.se
-Not in cache
-HTTP/1.1 200 OK
-Date: Sat, 20 Sep 2014 23:08:23 GMT
-Server: Apache/2.2.24 (Unix) DAV/2 SVN/1.6.17 PHP/5.3.23 mod_fastcgi/2.4.6 mod_auth_kerb/5.4+ida mod_jk/1.2.31 mod_ssl/2.2.24 OpenSSL/0.9.7d
-Last-Modified: Wed, 06 May 2009 18:12:35 GMT
-ETag: "4c4174-126-4694256fcaac0"
-Accept-Ranges: bytes
-Content-Length: 294
-Connection: close
-Content-Type: text/html
-
-<html>
-
-<title>
-Net Ninny Error Page 1 for CPSC 441 Assignment 1
-</title>
-
-<body>
-<p>
-Sorry, but the Web page that you were trying to access
-is inappropriate for you, based on the URL.
-The page has been blocked to avoid insulting your intelligence.
-</p>
-
-<p>
-Net Ninny
-</p>
-
-</body>
-
-</html>
-
+  url_redirect.host_name = "www.ida.liu.se";
+  url_redirect.url = "http://www.ida.liu.se/~TDTS04/labs/2011/ass2/error1.html";
+  
+  content_redirect.request = "GET http://www.ida.liu.se/~TDTS04/labs/2011/ass2/error2.html HTTP/1.1\r\n"
+    "Host: www.ida.liu.se\r\n"
+    "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:32.0) Gecko/20100101 Firefox/32.0\r\n"
+    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+    "Accept-Language: en-US,en;q=0.5\r\n"
+    "Accept-Encoding: gzip, deflate\r\n"
+    "Connection: close\r\n\r\n";
+    content_redirect.url = "http://www.ida.liu.se/~TDTS04/labs/2011/ass2/error2.html";
+    content_redirect.host_name = "www.ida.liu.se";
 }
 
 
@@ -73,41 +39,67 @@ cache::~cache()
 
 }
 
+string cache::handle_request(string request, string host_url, string host)
+{
+  unordered_map<string, string>::iterator in_cache = table.find(host_url);
+  string response;
 
-string cache::start(string url, string http_request, string host_name)
+  //Not in cache
+  if(in_cache == table.end())
+    {
+      //Connect via socket_client
+      //cout << "Not in cache" << endl;
+      socket_client sc(host, request);  
+      response = sc.start();
+      
+      //cout << endl << endl << response << endl;
+    }
+  else
+    {
+      //Fetch from cache instead
+      cout << "In cache!!" << endl;
+    }
+  return response;
+}
+string cache::start(string url, string http_request, string host_name, bool url_red)
 {
 
   string response = "";
   string request = http_request;
+  string host_url = url;
+  string host = host_name;
 
-  cout << "host_name: " << host_name << endl;
-  //No URL redirect
-  if(host_name != "url_redirect")
+  cout << endl << endl << request << endl << endl;
+
+  //URL redirect
+  if(url_red)
     {
-      unordered_map<string, string>::iterator in_cache = table.find(url);
-
-      //Not in cache
-      if(in_cache == table.end())
-	{
-	  //Connect via socket_client
-	  cout << "Not in cache" << endl;
-
-	  socket_client sc(host_name, http_request);  
-	  response = sc.start();
-
-	}
-      else
-	{
-	  //Fetch from cache instead
-	  cout << "In cache!!" << endl;
-	}
+      //cout << "Redirecting, inappropriate URL" << endl;
+      request = url_redirect.request;
+      host = url_redirect.host_name;
+      host_url = url_redirect.url;
+      response = handle_request(request, host_url, host);
     }
-  //Redirect
   else
     {
-      cout << "Redirecting, inappropriate URL" << endl;
-
+      response = handle_request(request, host_url, host);
+      content_filter cf = content_filter(&uf->key_words);
+      bool bad_content = cf.start(response);
+      //Content redirect
+      if(bad_content){
+	//cout << "Redirecting, inappropriate CONTENT" << endl;
+	request = content_redirect.request;
+	host = content_redirect.host_name;
+	host_url = content_redirect.url;
+	response = handle_request(request, host_url, host);
+	//	cout << endl << endl << "bad content" << endl << endl;
+      }
     }
+  //cout << endl << endl << response << endl;
+
+  //cout << request << endl;
+
+  //handle_request
 
   return response;
 

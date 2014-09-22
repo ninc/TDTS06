@@ -1,10 +1,12 @@
 TODO:
 
 1. Filtrera GET requestet och bygg sedan upp det med modifierade värden. (Connection: keep-alive bör vara Connection: close istället)
-
+check
 
 2. Filtrera content av responsen.
-
+check
 3. Detektera om responsen är plain text eller något annat format.
+Kolla genom: Content-Type: text/html
+Behandla en str�m av data f�r bilder
 
 4. Cache? 

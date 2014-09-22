@@ -10,6 +10,7 @@ public:
   url_filter();
   ~url_filter();
   string start(string http_request);
+  vector<string> key_words;
 private:
   string filter(string http);
   string sort_header(string http);
@@ -21,9 +22,7 @@ private:
   string host_name;
   vector<string> first_url_part;
   vector<string> second_url_part;
-  vector<string> key_words;
-  string redirect_url;
-  string redirect_get_request;
+  bool url_redirect;
   
 };
 #endif

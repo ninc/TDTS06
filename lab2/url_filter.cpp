@@ -12,18 +12,8 @@ url_filter::url_filter()
 	key_words.push_back("Britney Spears");
 	key_words.push_back("Paris Hilton");
 	key_words.push_back("Norrköping");
-	redirect_url = "www.ida.liu.se";
-	redirect_get_request =
-	  "GET http://www.ida.liu.se/~TDTS04/labs/2011/ass2/error1.html HTTP/1.1\r\n"
-	  "Host: www.ida.liu.se\r\n"
-	  "User-Agent: Mozilla/5.0 (X11; Linux armv6l; rv:24.0) Gecko/20140727 Firefox/24.0 Iceweasel/24.7.0\r\n"
-	  "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n"
-	  "Accept-Language: sv-SE,sv;q=0.8,en-US;q=0.6,en;q=0.4\r\n"
-	  "Accept-Encoding: gzip,deflate\r\n"
-	  "Connection: keep-alive\r\n"
-	  "\r\n";
-	//cout << "The redirection get request....." << endl;
-	//cout << redirect_get_request << endl;
+	url = "";
+	url_redirect = false;
 }
 
 url_filter::~url_filter()
@@ -108,8 +98,8 @@ string url_filter::filter(string http)
       header = header.erase(0, header.find("\n") + 1);
       if(check_url(url))
 	{
-	  //TODO REDIRECT
-	  host_name = "url_redirect";
+	  //cout << endl << endl << "Redirect" << endl << endl;
+	  url_redirect = true;
 	}
       else
 	{
@@ -157,12 +147,17 @@ string url_filter::build_request(string request_header)
 string url_filter::start(string http_request)
 {
 
+  //cout << "filter start" << endl;
   string host_name = filter(http_request);
-  
-  cache c = cache();
+  //cout << "Cache start" << endl;
+  cache c = cache(this);
 
-  string response = c.start(url, request, host_name);
+  cout << endl << "in url filter: " << endl << request << endl;
 
+  string response = c.start(url, request, host_name, url_redirect);
+
+  //cout << endl <<"IN URL FILTER" << endl;
+  //cout << response << endl;
   return response;
 
 }

@@ -48,7 +48,7 @@ int socket_client::m_recv(){
     //cout << "recv_size: " << recv_size << " last in buffer: " << msg_buffer[i-4] 
     //	 << msg_buffer[i-3] << msg_buffer[i-2] << msg_buffer[i-1]
     //	 << msg_buffer[i] << endl;
-
+    
     //If end of HTTP request
     if(!strcmp("\r\n\r\n", &msg_buffer[i -4]))
        break;

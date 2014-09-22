@@ -109,15 +109,17 @@ int socket_server::m_handle_request(int sock){
     return -1;
   }
   
-  
+  //cout << "handle the request" << endl;
   //Do processing
   url_filter uf = url_filter();
   
   string message(msg_buffer);
-
+  
+  //cout << "Start filtering" << endl;
   string response = uf.start(message);
 
-  cout << response << endl;
+  //cout << endl << endl << "IN SOCKET SERVER" << endl << endl;
+  //cout << response << endl;
 
   //Write back to client
   m_send(sock, response);
