@@ -69,7 +69,7 @@ string cache::start(string url, string http_request, string host_name, bool url_
   string host_url = url;
   string host = host_name;
 
-  cout << endl << endl << request << endl << endl;
+  //cout << endl << endl << request << endl << endl;
 
   //URL redirect
   if(url_red)
@@ -97,7 +97,7 @@ string cache::start(string url, string http_request, string host_name, bool url_
     }
   //cout << endl << endl << response << endl;
 
-  //cout << request << endl;
+  cout << "In cache: " << endl << response << endl;
 
   //handle_request
 

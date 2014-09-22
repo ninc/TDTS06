@@ -36,15 +36,32 @@ int socket_client::m_recv(){
   char recv_buffer[256];
   int i = 0;
   int recv_size = 1;
+  int k = 0;
+  //string html_response;
+  int text_file;
   do{
     recv_size = recv(sockfd, recv_buffer, sizeof(recv_buffer), 0);
+    
+    //Check the first lines of the HTML response
+    if(i == 0)
+      {
+	//Encode HTML response to check if its text format or not
+	string html_response(recv_buffer);
+	text_file = html_response.find("Content-Type: text");
+
+	if(text_file > 0)
+	  {
+	    cout << "recv_buffer for k: " << k << " " << recv_buffer << endl;
+
+	  }
+      }
 
     for(int j = 0; j<recv_size; j++)
       {
 	msg_buffer[i] = recv_buffer[j];
 	i++;
       }
-
+    k++;
     //cout << "recv_size: " << recv_size << " last in buffer: " << msg_buffer[i-4] 
     //	 << msg_buffer[i-3] << msg_buffer[i-2] << msg_buffer[i-1]
     //	 << msg_buffer[i] << endl;

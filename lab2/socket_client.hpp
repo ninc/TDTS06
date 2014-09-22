@@ -28,7 +28,7 @@ private:
   int sockfd;
   struct addrinfo hint;
   struct addrinfo result;
-  static const int BUFFER_SIZE = 10000;
+  static const int BUFFER_SIZE = 1000000;
   char msg_buffer[BUFFER_SIZE];
 };
 #endif

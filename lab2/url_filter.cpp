@@ -152,8 +152,6 @@ string url_filter::start(string http_request)
   //cout << "Cache start" << endl;
   cache c = cache(this);
 
-  cout << endl << "in url filter: " << endl << request << endl;
-
   string response = c.start(url, request, host_name, url_redirect);
 
   //cout << endl <<"IN URL FILTER" << endl;
