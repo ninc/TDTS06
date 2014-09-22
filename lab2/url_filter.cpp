@@ -148,19 +148,17 @@ string url_filter::build_request(string request_header)
 int url_filter::start(string http_request)
 {
 
-  //cout << "filter start" << endl;
+
   string host_name = m_filter(http_request);
-  //cout << "Cache start" << endl;
+
   cache c = cache(this, m_sr);
 
   if(c.start(url, request, host_name, url_redirect) < 0){
     return -1;
   }
 
-  //cout << endl <<"IN URL FILTER" << endl;
-  //cout << response << endl;
+  cout << endl <<"IN URL FILTER" << endl;
   return 0;
-
 }
 
 

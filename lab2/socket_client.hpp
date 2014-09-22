@@ -18,7 +18,11 @@ public:
   ~socket_client();
   int start();
   int m_recv(char *recv_buffer);
+  int m_recv_header(char *recv_buffer);
   int m_close();
+  void set_host(string host);
+  void set_request(string request);
+
 private:
   int m_socket(struct addrinfo *result);
   int m_connect(struct addrinfo *result);

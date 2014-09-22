@@ -5,11 +5,11 @@ CFLAGS= -std=c++11 -c -Wpedantic -Wall -Wextra -Werror
 LDFLAGS= -L/sw/gcc-4.9.1/lib -lnsl -lsocket -lresolv
 
 
-#ifeq ($(OS), Linux)
-#	CC= g++
-#	CFLAGS= -std=c++11 -c -Wpedantic -Wall -Wextra -Werror
-#	LDFLAGS= -L/sw/gcc-4.9.1/lib
-#endif
+ifeq ($(OS), Linux)
+	CC= g++
+	CFLAGS= -std=c++11 -c -Wpedantic -Wall -Wextra -Werror
+	LDFLAGS= -L/sw/gcc-4.9.1/lib
+endif
 
 
 all: msp

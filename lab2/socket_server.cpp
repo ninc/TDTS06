@@ -130,7 +130,8 @@ int socket_server::m_send(string message){
 
   int sent_left = message.length();
   int reply_size;
-  char *msg_ptr = (char*)message.c_str();
+  string msg = message;
+  char *msg_ptr = (char*)msg.c_str();
 
   //cout << sent_left << endl;
   while(sent_left > 0)

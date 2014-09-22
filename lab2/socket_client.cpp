@@ -29,7 +29,9 @@ socket_client::~socket_client(){
 
 int socket_client::m_recv(char *recv_buffer){
 
-  int recv_size = recv(sockfd, recv_buffer, sizeof(recv_buffer), 0);
+  int recv_size = 0;
+  recv_size = recv(sockfd, recv_buffer, sizeof(recv_buffer), 0);
+
 
   //Check if socket has been read
   if (recv_size < 0) {
@@ -42,6 +44,16 @@ int socket_client::m_recv(char *recv_buffer){
   }
 
 } 
+
+void socket_client::set_host(string h)
+{
+  host = h;
+}
+
+void socket_client::set_request(string req)
+{
+  msg = req;
+}
 
 
 int socket_client::m_send(string message){
