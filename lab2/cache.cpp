@@ -127,7 +127,7 @@ string cache::recv_all(char *recv_buffer, string msg)
   
   //cout << "In recv_all" << endl;
   
-  string * msg_buffer = new string(msg);
+  string msg_buffer = msg;
 
   int recv_size = 1;
   while(recv_size > 0)
@@ -135,7 +135,7 @@ string cache::recv_all(char *recv_buffer, string msg)
 	
       recv_size = sc->m_recv(recv_buffer);
 	      
-      *msg_buffer += string(recv_buffer, recv_size);
+      msg_buffer += string(recv_buffer, recv_size);
 
       /*
       //If end of HTTP request
@@ -143,12 +143,9 @@ string cache::recv_all(char *recv_buffer, string msg)
 	break;
       */
     }
-
-  string response(*msg_buffer);
   
-  delete msg_buffer;
 
-  return response;
+  return msg_buffer;
 }
 
 
