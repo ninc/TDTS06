@@ -59,29 +59,37 @@ int socket_server::m_bind(){
     return 0;
   }
 } 
-int socket_server::m_recv(int sock, char *msg_buffer){
+int socket_server::m_recv(int sock){
 
   //Empty buffer
   //cout << "Socket server trying to recv" << endl;
-  char recv_buffer[256];
-  int i = 0;
+  char recv_buffer[1023];
   int recv_size = 1;
+  request = "";
+  string http_end = "";
   do{
     recv_size = recv(sock, recv_buffer, sizeof(recv_buffer), 0);
 
-    for(int j = 0; j<recv_size; j++)
-      {
-	msg_buffer[i] = recv_buffer[j];
-	i++;
-      }
+    request += string(recv_buffer, recv_size);
 
-    //If end of HTTP request
-    if(!strcmp("\r\n\r\n", &msg_buffer[i -4]))
-       break;
+
+    //http_end = request.substr(request.length() -4, request.length());
+    
+    //cout << http_end << endl;
+    //Find end of HTTP request
+    if(request.find("\r\n\r\n") > 0)
+      {
+	break;
+      }
 
   } while(recv_size > 0);
 
-  //cout << "Socket server recv COMPLETE" <<  endl;
+  if(request == "")
+    {
+      cerr << "Error: Recieved an empty http request" << endl;
+      return -2;
+    }
+  
   //Check if socket has been read
   if (recv_size < 0) {
     //Todo throw exception
@@ -97,26 +105,17 @@ int socket_server::m_recv(int sock, char *msg_buffer){
 int socket_server::m_handle_request(int sock){
 
   //Receive message
-  //cout << "Started handling of request" << endl;
-  char msg_buffer[BUFFER_SIZE];
-  //char *recv_buffer = (char*)malloc(sizeof(char)*BUFFER_SIZE);
-  memset(&msg_buffer, 0, sizeof(msg_buffer));
-  //cout << "recieve buffers first position: " << msg_buffer[0] << " slut " << endl;
-
-  
-  if(m_recv(sock, msg_buffer)){
-    cout << "Failed to recieve message in socket server" << endl;   
+  if(m_recv(sock)){
+    cerr << "Error: Failed to recieve message in socket server" << endl;   
     return -1;
   }
   
-  //cout << "handle the request" << endl;
   //Do processing
   url_filter uf = url_filter(this);
-  
-  string message(msg_buffer);
-  
+ 
   //cout << "Start filtering" << endl;
-  if(uf.start(message) < 0){
+  if(uf.start(request) < 0){
+    cout << "Failed to apply URL filtering" << endl;
     return -1;
   }
 
@@ -197,7 +196,7 @@ int socket_server::start()
 	  //cout << "Initating client processes in socket server" << endl;
 	  close(m_sockfd);
 	  if(m_handle_request(m_newsockfd)){
-	    cout << "Error, failed to hande request of server socket" << endl;
+	    cerr << "Error: failed to handle socket server request" << endl;
 	  }
 	  exit(0);
         }

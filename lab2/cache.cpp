@@ -43,11 +43,11 @@ cache::~cache()
 }
 
 //Stream the message to the browser without filtering
-int cache::socket_stream(char *recv_buffer, char *msg_buffer, int recv_s)
+int cache::socket_stream(char *recv_buffer, string msg)
 {
 
-  int recv_size = recv_s;
-  string response(msg_buffer);
+  int recv_size = 1;
+  string response = msg;
   //Pass the first message
   sr->m_send(response);
 
@@ -62,29 +62,35 @@ int cache::socket_stream(char *recv_buffer, char *msg_buffer, int recv_s)
 }
 
 //Check the content type for the http response
-int cache::check_response_type(char *recv_buffer, char *msg_buffer)
+string cache::check_response_type(char *recv_buffer)
 {
 
+  string msg_buffer = "";
   int recv_size = 0;
   string html_response;
-  int i = 0;
   int recieved = 0;
-  int content_found = 0;
+  //int content_found = 0;
 
   do
     {
       recv_size = sc->m_recv(recv_buffer);
       
+      msg_buffer += string(recv_buffer, recv_size);
+
+      /*
       for(int j = 0; j<recv_size; j++)
 	{
 	  msg_buffer[i] = recv_buffer[j];
 	  i++;
 	}
+      */
+
 
       //Encode HTML response to check if its text format or not
       html_response = msg_buffer;
-      int text_file = html_response.find("Content-Type: ");
+      int text_file = html_response.find("/r/n/r/n");
      
+      /*
       //Content-Type found
       if(text_file >= 0)
 	{
@@ -94,6 +100,11 @@ int cache::check_response_type(char *recv_buffer, char *msg_buffer)
 	    break;
 
 	}
+      */
+      
+      //Found end of HTML header
+      if(text_file >= 0)
+	break;
 
       recieved += recv_size;
     }while(recv_size > 0);
@@ -106,34 +117,25 @@ int cache::check_response_type(char *recv_buffer, char *msg_buffer)
   //cout << msg_buffer << endl << endl << endl;
   
 
-  return recieved;
+  return msg_buffer;
 
 }
 
 //Store the text message for filtering
-string cache::recv_all(char *recv_buffer, char *msg_buffer, int recv_s)
+string cache::recv_all(char *recv_buffer, string msg)
 {
   
-  //cout << "In recv_all" << endl << msg_buffer << endl;
+  //cout << "In recv_all" << endl;
+  
+  string * msg_buffer = new string(msg);
 
   int recv_size = 1;
-  int i = recv_s;
   while(recv_size > 0)
     {
 	
       recv_size = sc->m_recv(recv_buffer);
-	
-      if(i > 99990)
-	{
-	  cout << "Almost out of buffer" << endl;
-	}
-
-      for(int j = 0; j<recv_size; j++)
-	{
-	  msg_buffer[i] = recv_buffer[j];
-	  i++;
-	}
-
+	      
+      *msg_buffer += string(recv_buffer, recv_size);
 
       /*
       //If end of HTTP request
@@ -142,7 +144,9 @@ string cache::recv_all(char *recv_buffer, char *msg_buffer, int recv_s)
       */
     }
 
-  string response(msg_buffer);
+  string response(*msg_buffer);
+  
+  delete msg_buffer;
 
   return response;
 }
@@ -150,42 +154,46 @@ string cache::recv_all(char *recv_buffer, char *msg_buffer, int recv_s)
 
 int cache::handle_request(string request, string host_url, string host)
 {
-  int recv_buffer_size = 255;
+  int recv_buffer_size = 1023;
   m_text = -1;
   unordered_map<string, string>::iterator in_cache = table.find(host_url);
-  string response;
+  string response = "";
 
-  cout << "Request: " << endl << request << endl;
+  //cout << "Request: " << endl << request << endl;
 
   //Not in cache
   if(in_cache == table.end())
     {
       //Connect via socket_client
-      cout << "Not in cache" << endl;
+      //cout << "Not in cache" << endl;
       sc = new socket_client(host, request);  
       char *recv_buffer = new char[recv_buffer_size]();
-      char *msg_buffer = new char[BUFFER_SIZE];
-      sc->start();
+      //char *msg_buffer = new char[BUFFER_SIZE];
+      if(sc->start() != 0)
+	{
+	  cout << "Error in socket setup: " << request << endl;
+	  return -1;
+	}
 
-      int recv_size = check_response_type(recv_buffer, msg_buffer);
+      response = check_response_type(recv_buffer);
 
-      cout << msg_buffer << endl;
-
+      //cout << response << endl;
+      
       // If the response contains a text file
       if(m_text >= 0)
 	{
 	  //cout << "Text response!!" << endl;
 
-	  string response = recv_all(recv_buffer, msg_buffer, recv_size);
+	  response = recv_all(recv_buffer, response);
 
-	  cout << "First response: " << endl << endl << response << endl;
+	  //cout << "First response: " << endl << endl << response << endl;
 
 	  //Filter the content of the message
  
 	  content_filter cf = content_filter(&uf->key_words);
 	  bool bad_content = cf.start(response);
 
-	  cout << "Hej hopp!" << endl;
+	  //cout << "Hej hopp!" << endl;
 
 
 	  //Content redirect
@@ -196,42 +204,45 @@ int cache::handle_request(string request, string host_url, string host)
 	    host_url = content_redirect.url;
 	    sc->m_close();
 
-	    cout << "Second response: " << endl;
+	    //cout << "Second response: " << endl;
 
 	    //Clear buffers
 	    memset(recv_buffer, 0, sizeof(char)*recv_buffer_size);
-	    memset(msg_buffer, 0, sizeof(char)*BUFFER_SIZE);
 
-	    cout << "Memset complete " << endl;
+	    //cout << "Memset complete " << endl;
 
 	    sc->set_host(host);
 	    sc->set_request(request);
-	    sc->start();
-	    response = recv_all(recv_buffer, msg_buffer, 0);
-	    cout << "2nd response done!" << endl;
+	    if(sc->start() != 0)
+	      {
+		cout << "Error in redirect socket" << endl << request << endl;
+		return -2;
+	      }
+
+	    response = recv_all(recv_buffer, "");
+	    //cout << "2nd response done!" << endl;
 	  }
 	  
        
 	  //Send the text message back to the browser
 	  sr->m_send(response);
 	  
-	  cout << "Send complete" << endl;
+	  //cout << "Send complete" << endl;
 	}
       //If its not a text file
       else
 	{
-	  socket_stream(recv_buffer, msg_buffer, recv_size);
+	  //cout << "Not a text file... streaming instead" << endl;
+	  socket_stream(recv_buffer, response);
 	}
 
-      cout << "Before delete" << endl;
+      //cout << "Before delete" << endl;
       //Clean up
       delete sc;
-      cout << "sc complete" << endl;
+      //cout << "sc complete" << endl;
       delete recv_buffer;
-      cout << "recv complete" << endl;
-      delete msg_buffer;
 
-      cout << "msg complete" << endl;
+      //cout << "msg complete" << endl;
     }
   //Fetch from cache instead
   else
@@ -240,7 +251,7 @@ int cache::handle_request(string request, string host_url, string host)
     }
 
   
-  cout << "Cache complete" << endl;
+  //cout << "Cache complete" << endl;
 
   return 0;
 }

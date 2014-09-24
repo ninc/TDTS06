@@ -5,8 +5,15 @@ check
 
 2. Filtrera content av responsen.
 check
+
 3. Detektera om responsen Ã¤r plain text eller nÃ¥got annat format.
 Kolla genom: Content-Type: text/html
 Behandla en ström av data för bilder
+check
 
-4. Cache? 
+4. Fixa så att man kan välja vilken port proxyn ska connecta på
+check
+
+5. Cache? 
+
+6. PUT request?

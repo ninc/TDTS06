@@ -62,6 +62,8 @@ int socket_client::m_send(string message){
   int reply_size;
   char *msg_ptr = (char*)message.c_str();
 
+  unsigned int i = 0;
+
   //cout << sent_left << endl;
   while(sent_left > 0)
     {
@@ -79,6 +81,14 @@ int socket_client::m_send(string message){
       sent_left -= reply_size;
       //Move message pointer
       msg_ptr += reply_size;
+      i += reply_size;
+
+      if(i > message.length())
+	{
+	  cout << "Maybe outside of buffer?? " << *msg_ptr << " " << sent_left << endl;
+	}
+      
+
       //cout << "sent left: " <<  sent_left << endl;
     }
   //cout << "Socket client m_send finished" << endl;
@@ -116,7 +126,7 @@ int socket_client::m_socket(struct addrinfo *result){
   //Get addr_info
   int status = getaddrinfo(host.c_str(), portno.c_str(), &hints, &result);
   if(status != 0){
-    cout << "Failed to getaddrinfo " << gai_strerror(status) << endl;
+    cout << "Failed to getaddrinfo (host: " << host << ", port: " << portno << ") " << gai_strerror(status) << endl;
     return -2;
   }
   //setup socket with addr_info data

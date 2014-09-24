@@ -15,9 +15,9 @@ public:
   int start(string url, string http_request, string host_name, bool url_red);
 private:
   int handle_request(string request, string host_url, string host);
-  int socket_stream(char *recv_buffer, char *msg_buffer, int recv_s);
-  int check_response_type(char *recv_buffer, char *msg_buffer);
-  string recv_all(char *recv_buffer, char *msg_buffer, int recv_s);
+  int socket_stream(char *recv_buffer, string msg);
+  string check_response_type(char *recv_buffer);
+  string recv_all(char *recv_buffer, string msg);
 
 
   int m_text;
@@ -25,7 +25,7 @@ private:
   url_filter *uf;
   socket_server *sr;
   socket_client *sc;
-  static const int BUFFER_SIZE = 100000;
+  //static const int BUFFER_SIZE = 100000;
 
   struct request_info
   {

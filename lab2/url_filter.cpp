@@ -64,9 +64,12 @@ string url_filter::sort_header(string http)
 	      value = line.substr(pos+delimiter.size(), line.size());
 	      value.erase(value.size()-1,value.size());
 	      
+	      //cout << "Key: " << key << " value: " << value << endl;
+
 	      if(key.compare("Connection") == 0){
 		  value = "close";
 	      }else if(key.compare("Host") == 0){
+		//cout << "Found host_name: " << value << endl;
 		host_name = value;
 		}
 		first_url_part.push_back(key);
@@ -75,6 +78,7 @@ string url_filter::sort_header(string http)
 	    }
 	}
     }
+
   return host_name;
 }
 
@@ -99,8 +103,9 @@ string url_filter::m_filter(string http)
       header = header.erase(0, header.find("\n") + 1);
       if(check_url(url))
 	{
-	  //cout << endl << endl << "Redirect" << endl << endl;
+	  //cout <<  endl << "URL Redirect" << endl << endl;
 	  url_redirect = true;
+	  host_name = "url_redirect";
 	}
       else
 	{
@@ -151,13 +156,21 @@ int url_filter::start(string http_request)
 
   string host_name = m_filter(http_request);
 
+  //Error handling for incorrect requests
+  if(host_name == "Unknown host")
+    {
+      cerr << "Unable to parse host_name from http_request: " << endl << http_request << endl;
+      return -2;
+    }
+
   cache c = cache(this, m_sr);
 
   if(c.start(url, request, host_name, url_redirect) < 0){
+    cerr << "Cache.start() failed" << endl;
     return -1;
   }
 
-  cout << endl <<"IN URL FILTER" << endl;
+  //cout << endl <<"IN URL FILTER" << endl;
   return 0;
 }
 
