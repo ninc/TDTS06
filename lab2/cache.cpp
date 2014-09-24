@@ -154,7 +154,7 @@ string cache::recv_all(char *recv_buffer, string msg)
 
 int cache::handle_request(string request, string host_url, string host)
 {
-  int recv_buffer_size = 1023;
+  int recv_buffer_size = 2047;
   m_text = -1;
   unordered_map<string, string>::iterator in_cache = table.find(host_url);
   string response = "";

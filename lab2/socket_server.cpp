@@ -63,7 +63,7 @@ int socket_server::m_recv(int sock){
 
   //Empty buffer
   //cout << "Socket server trying to recv" << endl;
-  char recv_buffer[1023];
+  char recv_buffer[2047];
   int recv_size = 1;
   request = "";
   string http_end = "";
@@ -76,13 +76,14 @@ int socket_server::m_recv(int sock){
     //http_end = request.substr(request.length() -4, request.length());
     
     //cout << http_end << endl;
+
     //Find end of HTTP request
     if(request.find("\r\n\r\n") > 0)
       {
 	break;
       }
 
-  } while(recv_size > 0);
+  } while(true);
 
   if(request == "")
     {
