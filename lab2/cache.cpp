@@ -5,8 +5,19 @@
 #include <cstring>
 #include <unistd.h>
 
+/*
+This class "cache" have all the objects inside of it, the server and client sockets and the content and url filters.
+The motivation behind this is to skip passing information through the filters in order to stream data from servers.
+Requirement 2 "Handles simple HTTP GET interactions between client and server" is reached, can be seen in the interaction
+between the server and client sockets in this object the cache.
+Requirement 6 "Is compatible with all major browsers (e.g. Internet Explorer, Mozilla Firefox, Google Chrome, etc.) without the requirement to tweak any advanced feature"
+is reached as well
+
+*/
 
 
+//The initiation of the cache, as can be seen the objects url_filter and socket_server are passed in here
+//Redirection url's are set for the url_filter and the one that will be created later on in this class, the content_filter
 cache::cache(url_filter *url_filter, socket_server *socket_server)
 {
   sr = socket_server;
@@ -42,7 +53,13 @@ cache::~cache()
 
 }
 
-//Stream the message to the browser without filtering
+//If the content's type is not text we will have to stream it over to the client, which is carried out here
+//The socket_server send's the response from server to client,
+//The recv_buffer is dynamically allocated and receives incoming data from the server
+//and when full stores it in the response string to keep data.
+//It streams the message to the browser without filtering.
+//Fills the following requirement:
+//5. "Imposes no limit on the size of the transferred HTTP data"
 int cache::socket_stream(char *recv_buffer, string msg)
 {
 
@@ -61,7 +78,11 @@ int cache::socket_stream(char *recv_buffer, string msg)
   return 0;
 }
 
-//Check the content type for the http response
+//Concatenate the incoming "lumps" of strings from the server, this stop's when Content-Type header have been found
+//and it's value. Happens at /r/n/r/n....
+//This function fills the following requirement:
+//8. "Is smart in selection of what HTTP content should be searched for the forbidden keywords.
+//For example, you probably agree that it is not wise to search inside compressed or other non-text-based HTTP content such as graphic files, etc."
 string cache::check_response_type(char *recv_buffer)
 {
 
@@ -102,7 +123,7 @@ string cache::check_response_type(char *recv_buffer)
 	}
       */
       
-      //Found end of HTML header
+      //Found end of HTML header, i.e. "Content-Type: .../r/n/r/n"
       if(text_file >= 0)
 	break;
 
@@ -121,6 +142,7 @@ string cache::check_response_type(char *recv_buffer)
 
 }
 
+//If the content type is text we only need to store the text in a string and then filter it's content's
 //Store the text message for filtering
 string cache::recv_all(char *recv_buffer, string msg)
 {
@@ -148,7 +170,10 @@ string cache::recv_all(char *recv_buffer, string msg)
   return msg_buffer;
 }
 
-
+//The handle request function creates the client socket and content filter here, 
+//The socket client is activated and sends the get_request from the socket server, 
+//The request is sent and the response from server are handled, check the content type
+//and carry out the right action after that....
 int cache::handle_request(string request, string host_url, string host)
 {
   int recv_buffer_size = 2047;
@@ -253,7 +278,7 @@ int cache::handle_request(string request, string host_url, string host)
   return 0;
 }
 
-
+//Start the cache
 int cache::start(string url, string http_request, string host_name, bool url_red)
 {
 

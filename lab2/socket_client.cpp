@@ -6,10 +6,11 @@
 
 using namespace std;
 
+
 socket_client::socket_client(string h, string message) : socket_client(h, message, 80){
  
 }
-
+//The socket_client initiates the host's name, the get_request and the port number
 socket_client::socket_client(string h, string message, int port){
 
   //cout << "Initiating socket client" << endl;
@@ -26,7 +27,7 @@ socket_client::~socket_client(){
   // freeaddrinfo(&result);
 	
 } 
-
+//Socket_client receiving header and other content from the server, stored in recv_buffer
 int socket_client::m_recv(char *recv_buffer){
 
   int recv_size = 0;
@@ -45,17 +46,18 @@ int socket_client::m_recv(char *recv_buffer){
 
 } 
 
+//Set host
 void socket_client::set_host(string h)
 {
   host = h;
 }
-
+//Set get_request
 void socket_client::set_request(string req)
 {
   msg = req;
 }
 
-
+//Socket_client sending it's get_request to server, which is stored in msg_ptr
 int socket_client::m_send(string message){
 
   int sent_left = message.length();
@@ -95,6 +97,7 @@ int socket_client::m_send(string message){
   return 0;
 }
 
+//This  assigns a free local port number to the socket_client. When doing TCP,  an attempt to do an establishment of a new TCP connection is carried out
 int socket_client::m_connect(struct addrinfo *result){
   
   //cout << "Starting connect socket client " << endl;
@@ -114,6 +117,7 @@ int socket_client::m_connect(struct addrinfo *result){
   }
 }
 
+//socket_client is generated
 int socket_client::m_socket(struct addrinfo *result){
   
 
@@ -151,7 +155,7 @@ int socket_client::m_close()
   return 0;
 }
 
-
+//Activates the socket_client, 
 int socket_client::start()
 {
 

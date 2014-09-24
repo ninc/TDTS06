@@ -6,9 +6,14 @@
 
 using namespace std;
 
+//This class url_filter fills the following requirement:
+//Requirement 3: "Blocks requests for undesirable URLs, using HTTP redirection to display this error page instead"
+
+//Initiate the url_filter, the passing of the socket_server will be furth explained in cache.cpp... 
 url_filter::url_filter(socket_server *socket_server)
 {
   m_sr = socket_server;
+  //The values to be filtered in the url, sent by the client
   key_words.push_back("SpongeBob");
   key_words.push_back("Britney Spears");
   key_words.push_back("Paris Hilton");
@@ -22,6 +27,7 @@ url_filter::~url_filter()
 
 }
 
+//Check if the url contains any of the inappropriate words
 bool url_filter::check_url(string url){
   std::vector<string>::iterator it1;
   int illegal_url;
@@ -39,7 +45,8 @@ bool url_filter::check_url(string url){
   return false;
 }
 
-//Sort header elements into a dictionary called header
+//Sort header elements into a dictionary called header. Input is the get_request from client.
+//Requirement number 1 is reached here, supports HTTP 1.0 and 1.1
 string url_filter::sort_header(string http)
 {
   string delimiter = ": ";
@@ -67,6 +74,8 @@ string url_filter::sort_header(string http)
 	      //cout << "Key: " << key << " value: " << value << endl;
 
 	      if(key.compare("Connection") == 0){
+		//The proxy should support both HTTP/1.0 and HTTP/1.1.
+		//i.e. Connection-type: close
 		  value = "close";
 	      }else if(key.compare("Host") == 0){
 		//cout << "Found host_name: " << value << endl;
@@ -83,7 +92,7 @@ string url_filter::sort_header(string http)
 }
 
 
-//URL filter the http request
+//URL filter the get_request (http), if it contains inappropriate a redirection-flag is set
 string url_filter::m_filter(string http)
 {
   string temp = http;
@@ -103,7 +112,7 @@ string url_filter::m_filter(string http)
       header = header.erase(0, header.find("\n") + 1);
       if(check_url(url))
 	{
-	  //cout <<  endl << "URL Redirect" << endl << endl;
+	  //Set the flag for redirection
 	  url_redirect = true;
 	  host_name = "url_redirect";
 	}
@@ -132,7 +141,7 @@ string url_filter::m_filter(string http)
 }
 
 
-//Rebuild the modified http request
+//Rebuild the modified get_request (http), the Connection property is changed to "close", forcing this function build_request to be carried out
 string url_filter::build_request(string request_header)
 {
   
@@ -149,7 +158,8 @@ string url_filter::build_request(string request_header)
 }
 
 
-//Start the filtering
+//Start the filtering, in this function start the object "cache" can be seen, the socket_server (object) is passed in to this one,
+//this will be explained in cache.cpp...
 int url_filter::start(string http_request)
 {
 

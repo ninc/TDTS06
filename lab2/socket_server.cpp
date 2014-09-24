@@ -5,6 +5,8 @@
 
 using namespace std;
 
+//The constructor of server
+//Here, we initialize the socket and bind it.
 socket_server::socket_server(int port){
   m_portno = port;
   m_clilen = sizeof(m_cli_addr);
@@ -21,13 +23,15 @@ socket_server::socket_server(int port){
 }
 socket_server::~socket_server(){
 	
-	
+  
 } 
+//Socket_server listening to client if a new request should be taken
 int socket_server::m_listen(){
   listen(m_sockfd,5);
   return 0;
 } 
 
+//Socket_server accepts connection, it determines if it should accept a new incoming attempt to create a new TCP connection from the client
 int socket_server::m_accept(){
   m_newsockfd = accept(m_sockfd, (struct sockaddr *) &m_cli_addr, &m_clilen);
   if (m_newsockfd < 0){ 
@@ -39,6 +43,8 @@ int socket_server::m_accept(){
   }
 } 
 
+
+//Associates a socket with a socket address structure, includes local port number and IP adress
 int socket_server::m_bind(){
 
 
@@ -59,6 +65,10 @@ int socket_server::m_bind(){
     return 0;
   }
 } 
+
+//Socket_server trying to receive incoming GET request from client
+//Fills the following requirement:
+//7. "Allows the user to select the proxy port (i.e. the port number should not be hard coded)"
 int socket_server::m_recv(int sock){
 
   //Empty buffer
@@ -102,7 +112,7 @@ int socket_server::m_recv(int sock){
   }
 } 
 
-
+//Socket_server receives GET request and calls on the filter function for the url to outsource inappropriate content from client
 int socket_server::m_handle_request(int sock){
 
   //Receive message
@@ -111,7 +121,7 @@ int socket_server::m_handle_request(int sock){
     return -1;
   }
   
-  //Do processing
+  //Filter the content in url from the remote client
   url_filter uf = url_filter(this);
  
   //cout << "Start filtering" << endl;
@@ -123,7 +133,7 @@ int socket_server::m_handle_request(int sock){
   return 0;
 }
 
-
+//Socket_server responds to client with gathered information from server, msg_ptr contains the data
 int socket_server::m_send(string message){
 
   //cout << "Socket server m_send started" << endl;
@@ -155,6 +165,7 @@ int socket_server::m_send(string message){
 
 }
 
+//Generating new socket for socket_server, ready to be binded along with local port nr and IP addr
 int socket_server::m_socket(){
  
   m_sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -167,7 +178,7 @@ int socket_server::m_socket(){
   }
 }
 
-
+//This function activates the socket_server, all child processes are intiated when an attempt by client to connect is accepted by socket_server
 int socket_server::start()
 {
   m_listen();
