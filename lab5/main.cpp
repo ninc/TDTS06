@@ -26,6 +26,7 @@ int main( int argc, const char* argv[] )
   string line;
   size_t comment;
   stringstream ss;
+  /*
   int time_stamp;
   string client_id;
   int video_duration;
@@ -33,7 +34,7 @@ int main( int argc, const char* argv[] )
   string file_name;
   int file_size;
   int priority;
-
+  */
 
   while(getline(cin, line))
     {
@@ -48,17 +49,19 @@ int main( int argc, const char* argv[] )
       //Handle input
       else
 	{
+	  struct request req;
 	  //Read input
 	  ss << line;
-	  ss >> time_stamp >> client_id >> video_duration >> server_name >> file_name >> file_size >> priority;
+	  ss >> req.time_stamp >> req.client_id >> req.video_duration 
+	     >> req.server_name >> req.file_name >> req.file_size >> req.priority;
   
 	  //Cache input
-	  //cache.add(time_stamp, client_id, video_duration, server_name, file_name, file_size, priority);
+	  //cache.add(req);
 
 	  //Output
-	  cout << time_stamp << " " << client_id << " ";
-	  cout << video_duration << " " << server_name << " ";
-	  cout << file_name << " " << file_size << " " << priority << endl;
+	  cout << req.time_stamp << " " << req.client_id << " ";
+	  cout << req.video_duration << " " << req.server_name << " ";
+	  cout << req.file_name << " " << req.file_size << " " << req.priority << endl;
 	  
 	    
 	}
