@@ -1,0 +1,2 @@
+10	client_id	20	server_name	file_name	20	1
+ 
