@@ -1,0 +1,17 @@
+###############################
+Cache stats using LRU scheme
+Cache_size: 3
+Priority 1
+Timelimit 0
+Statsfile: stats.txt
+###############################
+Total requests: 14
+Total cache requests: 9
+Total cache hits: 6 (66.6667%)
+Total cache misses: 3 (33.3333%)
+Total unstored: 5
+###############################
+10 client_id 20 server_name file_name 20 2:  was requested: 1 times.
+15 client_id 20 server_name file_name1 20 2:  was requested: 3 times.
+14 client_id 20 server_name file_name2 20 2:  was requested: 2 times.
+

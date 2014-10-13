@@ -122,17 +122,21 @@ int main( int argc, const char* argv[] )
 	{
 	  struct request req;
 	  //Read input
+	  stringstream ss;
 	  ss << line;
 	  ss >> req.time_stamp >> req.client_id >> req.video_duration 
 	     >> req.server_name >> req.file_name >> req.file_size >> req.priority;
-  
+	  
+	  req.request_rate = 0;
+
 	  //Cache input
 	  c.new_request(req);
 	    
 	}
     }
 
-
+  //Creates the stats file
+  c.create_stats();
 
   return 0;
 }
