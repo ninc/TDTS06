@@ -2,14 +2,19 @@
 #include <sys/time.h>
 #include <sstream>
 #include <fstream>
-
+#include <climits>
 
 using namespace std;
+
+
 cache::cache(cache_type mode, int x, int y, int t, string stats_file)
-  {
-  
+{
+  //Initialize class variables
   cache_mode = mode;
-  m_size = x;
+  if(x > 0)
+    m_size = x;
+  else
+    m_size = INT_MAX;
   m_priority = y;
   m_time_limit = t;
   m_stats_file = stats_file;
@@ -45,6 +50,7 @@ cache::cache(cache_type mode, int x, int y, int t, string stats_file)
        << "###############################" << endl;
 
 
+  //Initialize vector
   m_cache.resize(1);
 
 }
@@ -60,7 +66,10 @@ string cache::cache_info()
 {
   stringstream ss;
 
-  ss << m_elements << " cached requests and " << m_bytes << "/" << m_size << " bytes. ";
+  if(cache_mode == LRU)
+    ss << m_elements << " cached requests and " << m_bytes << "/" << m_size << " bytes. ";
+  else if(cache_mode == TTL)
+    ss << m_elements << " cached requests and " << m_bytes << " bytes. ";
 
   string info = ss.str();
 
@@ -132,7 +141,7 @@ int cache::find_request(struct request req)
   return -1;
 }
 
-//Store the request in the cache at position pos
+//Store the request in the cache according to LRU
 int cache::lru_store_request(struct request req)
 {
 
@@ -142,7 +151,7 @@ int cache::lru_store_request(struct request req)
   //If cache is not full
   if(m_size >= m_bytes + file_size)
     {
-
+      //If first cacheline, dont increase cache size
       if(m_elements == 0)
 	{
 	  m_cache[0] = req;
@@ -190,7 +199,7 @@ int cache::lru_store_request(struct request req)
 }
 
 //Update the time_stamp for the LRU scheme
-void cache::update_time_stamp(int pos)
+void cache::lru_update_time_stamp(int pos)
 {
   //Update the requested cache line with the newest time stamp
   m_max_time_stamp++;
@@ -247,7 +256,7 @@ int cache::new_request_lru(struct request req)
 	{
 	  m_cache_hit++;
 	  cout << "Request already in cache. " << cache_info();
-	  update_time_stamp(in_cache);
+	  lru_update_time_stamp(in_cache);
 	}
       //File larger than cache
       else if(req.file_size > m_size)
@@ -278,18 +287,80 @@ int cache::new_request_lru(struct request req)
   return 0;
 }
 
-
+//Store requests via TTL (Time to live)
 int cache::new_request_ttl(struct request req)
 {
- if(req.time_stamp == 0)
+
+  // Get current time
+  time_t req_time = time(NULL);
+  req.time = req_time;
+
+  //Priority ok
+  if(req.priority > m_priority)
     {
-      return 1;
+      m_cache_requests++;
+      int in_cache = find_request(req);
+      
+
+      //Cache hit
+      if(in_cache >= 0)
+	{
+	  //TODO check if old cache line
+	  double time_diff = difftime(m_cache[in_cache].time, req.time);
+
+	  cout << "Cache hit! Time diff: " << time_diff << endl;
+
+	  m_cache_hit++;
+	  //cout << "Request already in cache. " << cache_info();
+	  
+
+	  //TODO UPDATE TIME STAMP
+	  m_cache[in_cache].time = req.time;
+
+	}
+      //Cache miss
+      else
+	{
+	  m_cache_miss++;
+	  ttl_store_request(req);
+	}
     }
+  //Priority too low
+  else
+    {
+      m_unstored++;
+      cout << "Not caching request, priority too low. " << cache_info();
+
+    }
+
+  cout << endl;
+  return 0;
+}
+
+//Store the request in the cache according to TTL
+int cache::ttl_store_request(struct request req)
+{
+ 
+  //If first cacheline, dont increase cache size
+  if(m_elements == 0)
+    {
+      m_cache[0] = req;
+    }
+  else
+    {
+      m_cache.push_back(req);
+    }
+
+  
+  m_bytes += req.file_size;
+  m_elements++;
+  cout << "Adding to cache. " << cache_info();
 
   return 0;
 }
 
 
+//Adds the request to statistics
 void cache::add_request_to_stats(struct request req)
 {
 
@@ -298,7 +369,6 @@ void cache::add_request_to_stats(struct request req)
   m_request_rates += ss.str();
 
 }
-
 
 //Formats the cache hit
 string cache::get_cache_hit()

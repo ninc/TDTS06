@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <ctime>
 
 using namespace std;
 
@@ -12,6 +13,7 @@ enum cache_type {LRU, TTL, NONE};
 struct request
 {
   unsigned long int time_stamp;
+  time_t time;
   string client_id;
   int video_duration;
   string server_name;
@@ -35,12 +37,14 @@ private:
   int new_request_ttl(struct request req);
   int find_request(struct request req);
   int lru_store_request(struct request req);
-  void update_time_stamp(int pos);
+  int ttl_store_request(struct request req);
+  void lru_update_time_stamp(int pos);
   int find_least_recently_used();
   void add_request_to_stats(struct request req);
   string get_cache_hit();
   string get_cache_miss();
 
+  //Internal variables
   cache_type cache_mode;
   string m_scheme;
   int m_time_limit;

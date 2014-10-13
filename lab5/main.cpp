@@ -11,12 +11,12 @@ int main( int argc, const char* argv[] )
   int k = argc;
   cache_type cache_mode = LRU;
   string arg;
-  int x = 1;
+  int x = -1;
   int y = 1;
   int t = 0;
   size_t found;
   string stats_file = "";
-  string invalid_args = "Invalid arguments!\nTry: cat input.txt | ./msc option=0 x=1 y=1 stats.txt > output.txt";
+  string invalid_args = "Invalid arguments!\nTry LRU: cat lru_input.txt | ./msc option=0 x=1 y=1 lru_stats.txt > lru_output.txt\nOr TTL: cat ttl_input.txt | ./msc option=1 y=1 t=1 ttl_stats.txt > ttl_output.txt";
 
 
   //Check for arguments
