@@ -15,6 +15,7 @@ cache::cache(cache_type mode, int x, int y, int t, string stats_file)
   m_stats_file = stats_file;
   m_elements = 0;
   m_max_time_stamp = 0;
+  m_bytes = 0;
 
 
   //STATS
@@ -44,7 +45,8 @@ cache::cache(cache_type mode, int x, int y, int t, string stats_file)
        << "###############################" << endl;
 
 
-  m_cache.resize(m_size);
+  m_cache.resize(1);
+
 }
 
 
@@ -58,7 +60,7 @@ string cache::cache_info()
 {
   stringstream ss;
 
-  ss << m_elements << "/" << m_size << " elements. ";
+  ss << m_elements << " cached requests and " << m_bytes << "/" << m_size << " bytes. ";
 
   string info = ss.str();
 
@@ -131,21 +133,57 @@ int cache::find_request(struct request req)
 }
 
 //Store the request in the cache at position pos
-int cache::store_request(struct request req, int pos)
+int cache::lru_store_request(struct request req)
 {
 
+  int file_size = req.file_size;
+  int pos = 0;
+
   //If cache is not full
-  if(m_size == m_elements)
+  if(m_size >= m_bytes + file_size)
     {
-      add_request_to_stats(m_cache[pos]);
-      cout << "Replacing request at position " << pos << ". " << cache_info();
-      m_cache[pos] = req;
+
+      if(m_elements == 0)
+	{
+	  m_cache[0] = req;
+	}
+      else
+	{
+	  m_cache.push_back(req); 
+	}
+
+      m_bytes += file_size;
+      m_elements++;
+      cout << "Adding to cache. " << cache_info();
+
     }
   else
     {
-      m_cache[m_elements] = req;
-      m_elements++;
-      cout << "Adding to cache position " << pos << ". " << cache_info();
+      //Remove cache lines until the new request fits
+      int i = 1;
+      do
+	{
+	  pos = find_least_recently_used();
+	  add_request_to_stats(m_cache[pos]);
+	  m_bytes -= m_cache[pos].file_size;
+
+	  //Replace a current item
+	  if(m_size >= m_bytes + file_size)
+	    {
+	      m_bytes += req.file_size;
+	      cout << "Replacing " << i << " requests to make room. " << cache_info();
+	      m_cache[pos] = req;
+	      break;
+	    }
+	  //Remove a request to make room
+	  else
+	    {
+	      m_cache.erase(m_cache.begin()+pos);
+	      m_elements--;
+	    }
+
+	  i++;
+	}while(true);
     }
 
   return 0;
@@ -168,7 +206,7 @@ int cache::find_least_recently_used()
   int least_used = 0;
   struct request it_prev = m_cache[0];
   struct request it;
-  for(int i = 1; i<m_size; i++)
+  for(unsigned int i = 1; i<m_cache.size(); i++)
     {
       it = m_cache[i];
 
@@ -211,12 +249,20 @@ int cache::new_request_lru(struct request req)
 	  cout << "Request already in cache. " << cache_info();
 	  update_time_stamp(in_cache);
 	}
+      //File larger than cache
+      else if(req.file_size > m_size)
+	{
+	  //Unable to cache
+	  m_cache_requests--;
+	  m_unstored++;
+	  cout << "Not caching request, file_size larger than cache_size. " << cache_info();
+
+	}
       //Add into cache
       else
 	{
 	  m_cache_miss++;
-	  int pos = find_least_recently_used();
-	  store_request(req, pos);
+	  lru_store_request(req);
 	}
 
     }
@@ -291,7 +337,7 @@ string cache::get_stats()
 {
 
   //Add the stats of the current cache
-  for(int i = 0; i<m_size; i++)
+  for(unsigned int i = 0; i<m_cache.size(); i++)
     {
       add_request_to_stats(m_cache[i]);
     }

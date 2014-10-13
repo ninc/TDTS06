@@ -34,7 +34,7 @@ private:
   int new_request_lru(struct request req);
   int new_request_ttl(struct request req);
   int find_request(struct request req);
-  int store_request(struct request req, int pos);
+  int lru_store_request(struct request req);
   void update_time_stamp(int pos);
   int find_least_recently_used();
   void add_request_to_stats(struct request req);
@@ -47,6 +47,7 @@ private:
   int m_priority;
   int m_size;
   int m_elements;
+  int m_bytes;
   string m_stats_file;
   unsigned long int m_max_time_stamp;
 
