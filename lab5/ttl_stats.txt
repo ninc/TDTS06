@@ -2,17 +2,14 @@
 Cache stats using TTL scheme
 Cache_size: 2147483647
 Priority 1
-Timelimit 1
+Timelimit 5
 Statsfile: ttl_stats.txt
 ###############################
 Total requests: 0
-Total cache requests: 6
-Total cache hits: 2 (33.3333%)
-Total cache misses: 4 (66.6667%)
-Total unstored: 5
+Total cache requests: 0
+Total cache hits: 0 (nan%)
+Total cache misses: 0 (nan%)
+Total unstored: 1000
 ###############################
-6 client_id 20 server_name file_name 20 2:  was requested: 0 times.
-7 client_id 20 server_name file_name1 20 2:  was requested: 0 times.
-8 client_id 20 server_name file_name2 20 2:  was requested: 0 times.
-9 client_id 20 server_name file_name3 100 2:  was requested: 0 times.
+0  0   0 0:  was requested: 0 times.
 

@@ -13,7 +13,6 @@ enum cache_type {LRU, TTL, NONE};
 struct request
 {
   unsigned long int time_stamp;
-  time_t time;
   string client_id;
   int video_duration;
   string server_name;
@@ -53,6 +52,7 @@ private:
   int m_elements;
   int m_bytes;
   string m_stats_file;
+  unsigned long int m_time;
   unsigned long int m_max_time_stamp;
 
   //STATS

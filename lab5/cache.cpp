@@ -21,6 +21,7 @@ cache::cache(cache_type mode, int x, int y, int t, string stats_file)
   m_elements = 0;
   m_max_time_stamp = 0;
   m_bytes = 0;
+  m_time = 0;
 
 
   //STATS
@@ -134,9 +135,7 @@ int cache::find_request(struct request req)
 	      }
 	    }
 	}
-
     }
-
 
   return -1;
 }
@@ -292,8 +291,7 @@ int cache::new_request_ttl(struct request req)
 {
 
   // Get current time
-  time_t req_time = time(NULL);
-  req.time = req_time;
+  m_time = req.time_stamp;
 
   //Priority ok
   if(req.priority > m_priority)
@@ -306,17 +304,24 @@ int cache::new_request_ttl(struct request req)
       if(in_cache >= 0)
 	{
 	  //TODO check if old cache line
-	  double time_diff = difftime(m_cache[in_cache].time, req.time);
-
-	  cout << "Cache hit! Time diff: " << time_diff << endl;
-
-	  m_cache_hit++;
-	  //cout << "Request already in cache. " << cache_info();
+	  if(m_time > m_cache[in_cache].time_stamp + m_time_limit)
+	    {
+	      m_cache_miss++;
+	      m_cache[in_cache].time_stamp = req.time_stamp;
+	      cout << "Cache miss, line too old" << cache_info();
+	      m_cache[in_cache].request_rate++;
+	      
+	    }
+	  else
+	    {
+	      m_cache_hit++;
+	      cout << "Cache hit. " << cache_info();
 	  
 
-	  //TODO UPDATE TIME STAMP
-	  m_cache[in_cache].time = req.time;
-
+	      //TODO UPDATE TIME STAMP
+	      m_cache[in_cache].time_stamp = req.time_stamp;
+	      m_cache[in_cache].request_rate++;
+	    }
 	}
       //Cache miss
       else
