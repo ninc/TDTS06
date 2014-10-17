@@ -292,6 +292,7 @@ int cache::new_request_ttl(struct request req)
 
   // Get current time
   m_time = req.time_stamp;
+  m_requests++;
 
   //Priority ok
   if(req.priority > m_priority)
