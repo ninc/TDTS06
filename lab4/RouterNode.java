@@ -8,6 +8,7 @@ public class RouterNode {
     private int[][] routingTable = new int[2][RouterSimulator.NUM_NODES];
     private RouterPacket[] buffer= new RouterPacket[RouterSimulator.NUM_NODES];
     private boolean[] bitMap = new boolean[RouterSimulator.NUM_NODES];
+    private boolean poisonEnabled = false;
 
     //--------------------------------------------------
     public RouterNode(int ID, RouterSimulator sim, int[] costs) {
@@ -22,17 +23,28 @@ public class RouterNode {
 	    bitMap[i] = false;
 	    buffer[i] = null;
 	}
+
+
 	//Init routing table
 	resetRoutingTable();
 
 	//Send our distance vector to neighboor
 	sendDistanceVectorToNeighbours();
-	//start();
+
     }
     
     //--------------------------------------------------
     public void recvUpdate(RouterPacket pkt) {
 	
+
+	//PoisonReverse
+	if(poisonEnabled)
+	    {
+		//TODO
+		buffer[pkt.source] = pkt;
+	    }
+
+
 	//Check to see if a change have been made in the routing table
 	boolean changed = updateRoutingTable(pkt);
 
@@ -125,14 +137,13 @@ public class RouterNode {
     public void updateLinkCost(int dest, int newcost) {
 	costs[dest] = newcost;
 
-	// IS this correct????
-	//routingTable[0][dest] = costs[dest];
-	//routingTable[1][dest] = dest;
-	
+	//Check to see if a change have been made in the routing table
+	boolean changed = updateRoutingTable(pkt);
 
-	sendDistanceVectorToNeighbours();
-
-	myGUI.println("\n\nUpdating routing costs\n\n");
+	//If table was updated, send the new version to other neighbours
+	if(changed){
+	    sendDistanceVectorToNeighbours();
+	}
     }
 
 
