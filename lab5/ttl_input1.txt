@@ -6,7 +6,7 @@
 2	client_id	20	server_name	file_name1	20	1
 3	client_id	20	server_name	file_name2	20	1
 4	client_id	20	server_name	file_name3	20	1
-5	client_id	20	server_name	file_name4	20	1
+5	client_id	20	server_name	file_name4	20	
 # Add the first 4 to the cache
 6	client_id	20	server_name	file_name	20	2
 7	client_id	20	server_name	file_name1	20	2

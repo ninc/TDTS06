@@ -1,19 +1,22 @@
 function req = gen_request()
 
     % PROGRAM PARAMETERS
+    % File namne
+    file_name = 'gen_input.txt';
+    
     % Time
-    number_of_time_stamps = 1000;
+    number_of_time_stamps = 10000;
     request_rate = 10;
-    max_time_stamp = 50000;
+    max_time_stamp = 1000000;
     
     % Files
-    number_of_files = 10;
+    number_of_files = 100;
     max_video_duration = 100;
     max_bytes = 1000;
     % Servers
-    number_of_servers = 5;
+    number_of_servers = 10;
     % Clients
-    number_of_clients = 5;
+    number_of_clients = 1000;
     
     
     %--------------------------------
@@ -43,6 +46,11 @@ function req = gen_request()
        % Uniform distribution
        video_duration(j) = round(rand(1)*max_video_duration);
        file_bytes(j) = round(rand(1)*max_bytes);
+       p = round(rand(1)*10);
+       if(p == 0)
+           p = 1;
+       end
+       priority(j) = p;
     end
     
 
@@ -64,7 +72,7 @@ function req = gen_request()
     %disp(file_bytes);
     %disp(Y);
     
-    fileID = fopen('gen_input.txt','w');
+    fileID = fopen(file_name,'w');
     
     
     %Write to file
@@ -93,14 +101,16 @@ function req = gen_request()
         video_dur = video_duration(f);
         file = files{f};
         file_b = file_bytes(f);
+        prio = priority(f);
         
         %Write to file
-        fprintf(fileID, '%i ', time);
-        fprintf(fileID, '%s ', client);
-        fprintf(fileID, '%i ', video_dur);
-        fprintf(fileID, '%s ', server);
-        fprintf(fileID, '%s ', file);
-        fprintf(fileID, '%i\r\n', file_b);
+        fprintf(fileID, '%i   ', time);
+        fprintf(fileID, '%s   ', client);
+        fprintf(fileID, '%i   ', video_dur);
+        fprintf(fileID, '%s   ', server);
+        fprintf(fileID, '%s   ', file);
+        fprintf(fileID, '%i   ', file_b);
+        fprintf(fileID, '%i\r\n', prio);
         
         
         
@@ -108,5 +118,5 @@ function req = gen_request()
     
     fclose(fileID);
     
-    req = 'File created';
+    req = file_name;
 end
