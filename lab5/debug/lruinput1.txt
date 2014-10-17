@@ -1,0 +1,20 @@
+# This input file is intended to show cache misses and LRU scheme details.
+# Run this input file with:
+# cat lruinput1.txt | ./msc option=0 x=50 y=1 lru_stats.txt > lruoutput1.txt
+# These first lines should not be cached because the priority is too low
+1	client_id	20	server_name	file_name	20	1
+2	client_id	20	server_name	file_name1	20	1
+3	client_id	20	server_name	file_name2	20	1
+4	client_id	20	server_name	file_name3	20	1
+5	client_id	20	server_name	file_name4	20	1
+# Add the first 2 to the cache
+6	client_id	20	server_name	file_name	20	2
+7	client_id	20	server_name	file_name1	20	2
+# Cache miss -> Replace file_name with file_name2
+8	client_id	20	server_name	file_name2	20	2
+# File_size larger then cache_size
+9	client_id	20	server_name	file_name3	100	2
+# Cache hit 
+10	client_id	20	server_name	file_name2	20	2
+# Cache miss -> Replace both cache lines since the new file needs more space
+11	client_id	20      server_name     file_name5      40    	2

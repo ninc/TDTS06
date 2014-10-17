@@ -450,5 +450,5 @@ void cache::create_stats()
   myfile.close();
 
 
-  cout << stats << endl;
+  //cout << stats << endl;
 }
