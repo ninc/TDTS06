@@ -1,0 +1,1 @@
+/usr/bin/java -DTrace=3 RouterSimulator

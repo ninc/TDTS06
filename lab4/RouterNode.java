@@ -1,14 +1,18 @@
-import javax.swing.*;        
+import javax.swing.*;   
+import java.util.Arrays;
 
 public class RouterNode {
     private int myID;
     private GuiTextArea myGUI;
     private RouterSimulator sim;
     private int[] costs = new int[RouterSimulator.NUM_NODES];
-    private int[][] routingTable = new int[2][RouterSimulator.NUM_NODES];
-    private RouterPacket[] buffer= new RouterPacket[RouterSimulator.NUM_NODES];
-    private boolean[] bitMap = new boolean[RouterSimulator.NUM_NODES];
-    private boolean poisonEnabled = false;
+    private boolean poisonEnabled = true;
+    
+    private int[][] myNeighboursDistTable = new int[RouterSimulator.NUM_NODES][RouterSimulator.NUM_NODES];
+    private int[] route = new int[RouterSimulator.NUM_NODES];
+    private boolean[] neighbours = new boolean[RouterSimulator.NUM_NODES];
+    private int[] myDistTable = new int[RouterSimulator.NUM_NODES];
+
 
     //--------------------------------------------------
     public RouterNode(int ID, RouterSimulator sim, int[] costs) {
@@ -16,72 +20,119 @@ public class RouterNode {
 	this.sim = sim;
 	myGUI =new GuiTextArea("  Output window for Router #"+ ID + "  ");
 	System.arraycopy(costs, 0, this.costs, 0, RouterSimulator.NUM_NODES);
+
+	// Init tables & print
+	myDistTable = costs;
+	initTables();
+	printDistanceTable();
 	
-	//Modified code
-	//Initialize recv buffer and bitmap
-	for(int i=0; i<RouterSimulator.NUM_NODES;i++){
-	    bitMap[i] = false;
-	    buffer[i] = null;
-	}
-
-
-	//Init routing table
-	resetRoutingTable();
-
 	//Send our distance vector to neighboor
-	sendDistanceVectorToNeighbours();
-
+	send();
     }
     
+    //Set all distances to infinity
+    private void initTables(){
+	for (int i = 0; i < RouterSimulator.NUM_NODES; i++) {
+            if (myID == i) {
+                myNeighboursDistTable[i] = costs;
+            } else {
+                int[] tmp = new int[RouterSimulator.NUM_NODES];
+                Arrays.fill(tmp, RouterSimulator.INFINITY);
+                myNeighboursDistTable[i] = tmp;
+            }
+            if (costs[i] == RouterSimulator.INFINITY) {
+                neighbours[i] = false;
+                route[i] = -1;
+            } else if (i != myID) {
+                neighbours[i] = true;
+                route[i] = i;
+            }
+	}
+    }
+
+
     //--------------------------------------------------
     public void recvUpdate(RouterPacket pkt) {
-	
-
-	//PoisonReverse
-	if(poisonEnabled)
-	    {
-		//TODO
-		buffer[pkt.source] = pkt;
-	    }
-
-
-	//Check to see if a change have been made in the routing table
-	boolean changed = updateRoutingTable(pkt);
-
-
-	//If table was updated, send the new version to other neighbours
-	if(changed){
-	    sendDistanceVectorToNeighbours();
+	if(pkt.destid == myID){
+	    myNeighboursDistTable[pkt.sourceid] = pkt.mincost;
+	    updateRoutingTable();
 	}
+
     }
    
-    //update routing table, return true if the table was updated
-    private boolean updateRoutingTable(RouterPacket pkt){
-	boolean output = false;
-	//iterate through the new packet
-	for(int i=0;i<RouterSimulator.NUM_NODES;i++){
-	    //skip self
+    //update routing table, send packet if updated
+    private void updateRoutingTable(){
+	int[] current = new int[RouterSimulator.NUM_NODES];
+	Arrays.fill(current, RouterSimulator.INFINITY);
+	
+	//iterate through neighbours distance tables
+	
+	for(int i=0;i<myNeighboursDistTable[myID].length;i++){
+	    //if shortest path goes through current node
 	    if(i==myID){
+		current[i] = myDistTable[i];
+		route[i] = i;
 		continue;
 	    }
-	    //skip source node
-	    else if(pkt.sourceid==i){
-		continue;
-	    }
-	    else{
-		//If the shorter path found, update
-		int pathcost = pkt.mincost[i] +routingTable[0][pkt.sourceid];
-		if(routingTable[0][i] > pathcost){
-		    routingTable[0][i]=pathcost;
-		    routingTable[1][i]=routingTable[1][pkt.sourceid];
-		    output=true;
+	    //iterate through neighbours
+	    for(int j = 0; j < neighbours.length; j++){
+		//if a neighbour exist
+		if(neighbours[j]){
+		    int cost = costs[j] + myNeighboursDistTable[j][i];
+		    //if shorter path found
+		    if(cost < current[i]){
+			current[i] = cost;
+			route[i] = j;
+      		    }
 		}
+		
 	    }
 	}
-	return output;
+	//if better path found, send new routingtable to neighbours
+	if(!Arrays.equals(current, myDistTable)){
+	    System.arraycopy(current, 0, myDistTable, 0, RouterSimulator.NUM_NODES);
+	    send();
+	}
     }
 
-//--------------------------------------------------
+    // Sends the nodes routing table to its neighbours
+    private void send()
+    {
+
+	RouterPacket pkt;
+        if(poisonEnabled){
+	    // Create a false distance table
+            int[] tmpDistTable = new int[RouterSimulator.NUM_NODES];
+            System.arraycopy(myDistTable,0,tmpDistTable,0,RouterSimulator.NUM_NODES);
+            for(int i = 0;i<neighbours.length;i++){
+                if(neighbours[i]){
+		    //Poisoned reverse
+                    for(int j = 0;j<route.length;j++){
+			// All routes that goes through my node, set to infinity
+                        if(route[j] == i && j!=i){
+                            tmpDistTable[j] = RouterSimulator.INFINITY;
+                        }
+                    }
+		    // Send new packet
+                    pkt = new RouterPacket(myID,i,tmpDistTable);
+                    sendUpdate(pkt);
+                }
+            }
+        } else {
+            for (int i = 0; i < neighbours.length; i++) {
+                if (neighbours[i]) {
+		    // Send new packet
+                    pkt = new RouterPacket(myID, i, myDistTable);
+                    sendUpdate(pkt);
+                }
+            }
+        }
+
+
+    }
+
+
+    //--------------------------------------------------
     private void sendUpdate(RouterPacket pkt) {
 	sim.toLayer2(pkt);
     }
@@ -93,118 +144,74 @@ public class RouterNode {
 		      "  at time " + sim.getClocktime());
 
 	//TODO - distancetable?????
-	myGUI.println("Distancetable: WHAT IS THIS?");
+	printNeighbourTable();
 	
 	//TODO - FORMAT PROPERLY MAYBE
-	//Print routingTable
-	myGUI.println(formatRoutingTable());
+	printMyRoutingTable();
 
 
     }
 
-    private void poisenedReverse()
+    // print neighbour tables according to specification
+    private void printNeighbourTable()
     {
 
+        myGUI.println("Neighbour Distance Table");
+        String str = F.format("dst    |", 15);
+        for (int i = 0; i < RouterSimulator.NUM_NODES; i++) {
+            str += (F.format(i, 15));
+        }
+        myGUI.println(str);
+        for (int i = 0; i < str.length(); i++) {
+            myGUI.print("-");
+        }
+        myGUI.println();
+        for (int i = 0; i < RouterSimulator.NUM_NODES; i++) {
+            str = F.format("nbr  " + i + " |", 15);
+            for (int j = 0; j < RouterSimulator.NUM_NODES; j++) {
+                str += (F.format(myNeighboursDistTable[i][j], 15));
+            }
+            if (i != myID && neighbours[i])
+                myGUI.println(str);
+        }
+        myGUI.println();
     }
 
-    private String formatRoutingTable()
+    // print my routing table according to specification
+    private void printMyRoutingTable()
     {
-	String output = "";
-	String node = "";
-	output += "Our distance vector and routes:\n";
+	String str;
+	myGUI.println("My Distance table and routes");
+        str = F.format("dst    |", 15);
+        for (int i = 0; i < RouterSimulator.NUM_NODES; i++) {
+            str += (F.format(i, 15));
+        }
+        myGUI.println(str);
+        for (int i = 0; i < str.length(); i++) {
+            myGUI.print("-");
+        }
+        str = F.format("cost  |", 15);
+        for (int i = 0; i < RouterSimulator.NUM_NODES; i++) {
+            str += F.format(myDistTable[i], 15);
+        }
+        myGUI.println();
+        myGUI.println(str);
+        str = F.format("route |", 15);
+        for (int i = 0; i < RouterSimulator.NUM_NODES; i++) {
+            str += F.format(route[i], 15);
+        }
+        myGUI.println(str);
+        myGUI.println();
+        myGUI.println("--------------------------------------------");
+        myGUI.println();
 
-
-	output += "Node  | Cost | Route \n";
-
-	for(int j = 0; j<RouterSimulator.NUM_NODES; j++)
-	    {
-		node = "";
-		if(routingTable[1][j] == -1)
-		    node = "-\n";
-		else if(routingTable[1][j] == -2)
-		    node = "?\n";
-		else
-		    {
-			node = routingTable[1][j] + "\n";
-		    }
-		output += j + "     | " + routingTable[0][j] + "    | " + node;
-	    }
-
-	return output;
     }
-
+    
     //--------------------------------------------------
     public void updateLinkCost(int dest, int newcost) {
 	costs[dest] = newcost;
-
-	//Check to see if a change have been made in the routing table
-	boolean changed = updateRoutingTable(pkt);
-
-	//If table was updated, send the new version to other neighbours
-	if(changed){
-	    sendDistanceVectorToNeighbours();
-	}
+	updateRoutingTable();
     }
-
-
-    //Send our distance vector to neighboor
-    private void sendDistanceVectorToNeighbours()
-    {
-
-	int[] mincost = new int[RouterSimulator.NUM_NODES];
-
-
-	//Update our routing package from our table
-	for(int j = 0; j<RouterSimulator.NUM_NODES; j++)
-	    {
-		mincost[j] = routingTable[0][j];
-	    }
-
-	//Send our routing table to all neighbours
-	for(int node = 0; node<RouterSimulator.NUM_NODES; node++)
-	    {
-		//Only send to neighbours
-		if(costs[node]==0 || costs[node]==999)
-		    {
-			continue;
-		    }
-		else 
-		    {
-			//Send new router packet
-			RouterPacket pkt = new RouterPacket(myID, node, mincost);
-			sendUpdate(pkt);
-		    }
-	    }
-
-    }
-
-
-
-    // Reset Routing Table
-    private void resetRoutingTable()
-    {
-	//Reset routing table
-	for(int j = 0; j<RouterSimulator.NUM_NODES; j++)
-	    {
-		if(j == myID)
-		    {
-			//Init self
-			routingTable[0][j] = 0;
-			routingTable[1][j] = -1; //Path to self
-		    }
-		else
-		    {
-			//Init to infinity
-			if(costs[j]==999){
-			    routingTable[1][j] = -2; //Unknown path
-			}
-			else{
-			    routingTable[1][j] = j; //known path
-			}
-			routingTable[0][j] = costs[j];
-
-		    }
-	    }
-    }
-
+	
 }
+    
